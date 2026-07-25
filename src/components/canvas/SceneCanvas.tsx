@@ -1,0 +1,41 @@
+import { Canvas } from '@react-three/fiber';
+import { EnvironmentLights } from './EnvironmentLights';
+import { CyberGrid } from './CyberGrid';
+import { CyberCoreMesh } from './CyberCoreMesh';
+import { CameraControls } from './CameraControls';
+
+interface SceneCanvasProps {
+  getAudioData: () => { bass: number; mid: number; treble: number; rms: number };
+}
+
+export const SceneCanvas = ({ getAudioData }: SceneCanvasProps) => {
+  return (
+    <div className="canvas-container">
+      <Canvas
+        camera={{ position: [0, 2, 8], fov: 60 }}
+        dpr={[1, 2]} // Performance optimization: cap at 2x pixel ratio
+        gl={{
+          antialias: true,
+          powerPreference: 'high-performance',
+          alpha: false,
+        }}
+      >
+        {/* Background & Atmospheric Fog */}
+        <color attach="background" args={['#030014']} />
+        <fog attach="fog" args={['#030014', 12, 40]} />
+
+        {/* Scene Lighting */}
+        <EnvironmentLights />
+
+        {/* Floor Horizon Grid */}
+        <CyberGrid />
+
+        {/* Central Deforming GLSL CyberCore Mesh */}
+        <CyberCoreMesh getAudioData={getAudioData} />
+
+        {/* Camera Navigation */}
+        <CameraControls />
+      </Canvas>
+    </div>
+  );
+};
