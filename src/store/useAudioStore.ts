@@ -59,7 +59,7 @@ export const useAudioStore = create<AudioStore>((set) => ({
 
   theme: 'cyber',
   autoRotate: true,
-  wireframe: false,
+  wireframe: true,
   bloomIntensity: 1.5,
   particleDensity: 1000,
   showUI: true,

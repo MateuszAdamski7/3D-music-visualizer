@@ -1,129 +1,152 @@
 import { shaderMaterial } from '@react-three/drei';
 import { extend } from '@react-three/fiber';
-import * as THREE from 'three';
 
 const audioSphereVertexShader = /* glsl */ `
   uniform float uTime;
-  uniform float uBass;
-  uniform float uMid;
-  uniform float uTreble;
-
-  varying vec3 vNormal;
-  varying vec3 vWorldPosition;
-  varying float vDisplacement;
-  varying float vSpikeIntensity;
-
-  // --------------------------------------------------------------------------
-  // Multi-Vertex Soft Dome Cap Spike Profile
-  // Uses smoothstep(0.0, 0.30, r) to ensure multiple vertices share the peak height,
-  // completely eliminating single-vertex pyramid artifacts.
-  // --------------------------------------------------------------------------
-  float calculateNarrowSmoothSpike(vec3 normPos, vec3 peakDir, float baseRadius) {
-    float cosAngle = clamp(dot(normPos, peakDir), -1.0, 1.0);
-    float angleDistance = acos(cosAngle); // Angular distance in radians
-    
-    if (angleDistance >= baseRadius) {
-      return 0.0;
-    }
-    
-    // Normalized radius from peak center (0.0 to 1.0)
-    float r = angleDistance / baseRadius;
-    
-    // Soft Dome Cap: top 30% radius shares peak height (1.0), forming a multi-vertex rounded cap
-    float cappedR = smoothstep(0.0, 0.30, r);
-    return 0.5 * (1.0 + cos(3.141592653589793 * cappedR));
+  uniform float uAmplitude;
+  uniform bool uIsBreathing;
+  
+  
+  vec3 mod289(vec3 x)
+  {
+    return x - floor(x * (1.0 / 289.0)) * 289.0;
   }
 
+  vec4 mod289(vec4 x)
+  {
+    return x - floor(x * (1.0 / 289.0)) * 289.0;
+  }
+
+  vec4 permute(vec4 x)
+  {
+    return mod289(((x*34.0)+10.0)*x);
+  }
+
+  vec4 taylorInvSqrt(vec4 r)
+  {
+    return 1.79284291400159 - 0.85373472095314 * r;
+  }
+
+  vec3 fade(vec3 t) {
+    return t*t*t*(t*(t*6.0-15.0)+10.0);
+  }
+
+  // Classic Perlin noise, periodic variant
+  float pnoise(vec3 P, vec3 rep)
+  {
+    vec3 Pi0 = mod(floor(P), rep); // Integer part, modulo period
+    vec3 Pi1 = mod(Pi0 + vec3(1.0), rep); // Integer part + 1, mod period
+    Pi0 = mod289(Pi0);
+    Pi1 = mod289(Pi1);
+    vec3 Pf0 = fract(P); // Fractional part for interpolation
+    vec3 Pf1 = Pf0 - vec3(1.0); // Fractional part - 1.0
+    vec4 ix = vec4(Pi0.x, Pi1.x, Pi0.x, Pi1.x);
+    vec4 iy = vec4(Pi0.yy, Pi1.yy);
+    vec4 iz0 = Pi0.zzzz;
+    vec4 iz1 = Pi1.zzzz;
+
+    vec4 ixy = permute(permute(ix) + iy);
+    vec4 ixy0 = permute(ixy + iz0);
+    vec4 ixy1 = permute(ixy + iz1);
+
+    vec4 gx0 = ixy0 * (1.0 / 7.0);
+    vec4 gy0 = fract(floor(gx0) * (1.0 / 7.0)) - 0.5;
+    gx0 = fract(gx0);
+    vec4 gz0 = vec4(0.5) - abs(gx0) - abs(gy0);
+    vec4 sz0 = step(gz0, vec4(0.0));
+    gx0 -= sz0 * (step(0.0, gx0) - 0.5);
+    gy0 -= sz0 * (step(0.0, gy0) - 0.5);
+
+    vec4 gx1 = ixy1 * (1.0 / 7.0);
+    vec4 gy1 = fract(floor(gx1) * (1.0 / 7.0)) - 0.5;
+    gx1 = fract(gx1);
+    vec4 gz1 = vec4(0.5) - abs(gx1) - abs(gy1);
+    vec4 sz1 = step(gz1, vec4(0.0));
+    gx1 -= sz1 * (step(0.0, gx1) - 0.5);
+    gy1 -= sz1 * (step(0.0, gy1) - 0.5);
+
+    vec3 g000 = vec3(gx0.x,gy0.x,gz0.x);
+    vec3 g100 = vec3(gx0.y,gy0.y,gz0.y);
+    vec3 g010 = vec3(gx0.z,gy0.z,gz0.z);
+    vec3 g110 = vec3(gx0.w,gy0.w,gz0.w);
+    vec3 g001 = vec3(gx1.x,gy1.x,gz1.x);
+    vec3 g101 = vec3(gx1.y,gy1.y,gz1.y);
+    vec3 g011 = vec3(gx1.z,gy1.z,gz1.z);
+    vec3 g111 = vec3(gx1.w,gy1.w,gz1.w);
+
+    vec4 norm0 = taylorInvSqrt(vec4(dot(g000, g000), dot(g010, g010), dot(g100, g100), dot(g110, g110)));
+    vec4 norm1 = taylorInvSqrt(vec4(dot(g001, g001), dot(g011, g011), dot(g101, g101), dot(g111, g111)));
+
+    float n000 = norm0.x * dot(g000, Pf0);
+    float n010 = norm0.y * dot(g010, vec3(Pf0.x, Pf1.y, Pf0.z));
+    float n100 = norm0.z * dot(g100, vec3(Pf1.x, Pf0.yz));
+    float n110 = norm0.w * dot(g110, vec3(Pf1.xy, Pf0.z));
+    float n001 = norm1.x * dot(g001, vec3(Pf0.xy, Pf1.z));
+    float n011 = norm1.y * dot(g011, vec3(Pf0.x, Pf1.yz));
+    float n101 = norm1.z * dot(g101, vec3(Pf1.x, Pf0.y, Pf1.z));
+    float n111 = norm1.w * dot(g111, Pf1);
+
+    vec3 fade_xyz = fade(Pf0);
+    vec4 n_z = mix(vec4(n000, n100, n010, n110), vec4(n001, n101, n011, n111), fade_xyz.z);
+    vec2 n_yz = mix(n_z.xy, n_z.zw, fade_xyz.y);
+    float n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x); 
+    return 2.2 * n_xyz;
+  }
+
+  varying vec3 vPosition;
+  varying float vNoise; // Wysyłamy wysokość fali do fragment shadera!
+  varying vec3 vNormal;
+
   void main() {
-    vNormal = normalize(normalMatrix * normal);
-    vec3 normPos = normalize(position);
+    float noise = 2.0 * pnoise(position + uTime * 0.5, vec3(10.0));
+    float displacement = noise / 10.0;
 
-    float safeBass = clamp(uBass, 0.0, 1.2);
-    float safeTreble = clamp(uTreble, 0.0, 1.2);
+    float breathing = 0.0;
+    if (uIsBreathing) {
+      breathing = 0.05 * sin(uTime * 5.0);
+    }
 
-    // --------------------------------------------------------------------------
-    // STRICTLY 5 FIXED FOCAL PEAK DIRECTIONS ON THE SPHERE SURFACE
-    // --------------------------------------------------------------------------
-    vec3 peak1 = vec3(0.0, 1.0, 0.0);                   // 1. Top Peak
-    vec3 peak2 = vec3(0.0, -1.0, 0.0);                  // 2. Bottom Peak
-    vec3 peak3 = normalize(vec3(-0.95, 0.25, 0.8));     // 3. Front-Left Peak
-    vec3 peak4 = normalize(vec3(0.95, 0.25, 0.8));      // 4. Front-Right Peak
-    vec3 peak5 = normalize(vec3(0.0, 0.4, -1.0));       // 5. Back-Center Peak
+    float noiseDisplacement = displacement * uAmplitude;
 
-    // Base radius (0.16 rad ≈ 9 degrees) for skinny cyber spikes
-    float skinnyBaseRadius = 0.16;
+    vec3 newPosition = position + normal * (noiseDisplacement + breathing);
 
-    float p1 = calculateNarrowSmoothSpike(normPos, peak1, skinnyBaseRadius);
-    float p2 = calculateNarrowSmoothSpike(normPos, peak2, skinnyBaseRadius);
-    float p3 = calculateNarrowSmoothSpike(normPos, peak3, skinnyBaseRadius);
-    float p4 = calculateNarrowSmoothSpike(normPos, peak4, skinnyBaseRadius);
-    float p5 = calculateNarrowSmoothSpike(normPos, peak5, skinnyBaseRadius);
-
-    // Tall, high-amplitude, aggressive extension on beat drops
-    float s1 = p1 * (safeBass * 1.50);
-    float s2 = p2 * (safeBass * 1.40);
-    float s3 = p3 * (safeTreble * 1.50);
-    float s4 = p4 * (safeTreble * 1.50);
-    float s5 = p5 * ((safeBass + safeTreble) * 0.90);
-
-    // Sum of displacement strictly localized to the 5 rounded peak domes
-    float totalDisplacement = clamp(s1 + s2 + s3 + s4 + s5, -0.1, 1.7);
-    vDisplacement = totalDisplacement;
-    vSpikeIntensity = clamp(totalDisplacement * 1.8, 0.0, 1.0);
-
-    // Extend position outwards along surface normal vector
-    vec3 newPosition = position + normal * totalDisplacement;
-
-    vWorldPosition = (modelMatrix * vec4(newPosition, 1.0)).xyz;
+    vNormal = normal;
+    vPosition = newPosition;
+    vNoise = noise * uAmplitude; // Przekazujemy "surową" wysokość fali
+    
     gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
   }
 `;
 
 const audioSphereFragmentShader = /* glsl */ `
-  uniform float uTime;
-  uniform vec3 uColorBase;
-  uniform vec3 uColorBass;
-  uniform vec3 uColorMid;
-  uniform vec3 uColorTreble;
-  uniform float uFresnelPower;
-
+  uniform vec2 uResolution;
+  varying vec3 vPosition;
+  varying float vNoise;
   varying vec3 vNormal;
-  varying vec3 vWorldPosition;
-  varying float vDisplacement;
-  varying float vSpikeIntensity;
 
   void main() {
-    vec3 viewDirection = normalize(cameraPosition - vWorldPosition);
+    vec2 uv = gl_FragCoord.xy / uResolution;
 
-    // Guard pow(0, x) against GPU log(0) NaN bugs
-    float dotVal = clamp(1.0 - max(dot(viewDirection, vNormal), 0.0), 0.0001, 1.0);
-    float fresnel = pow(dotVal, clamp(uFresnelPower, 1.0, 5.0));
+    float normalizedNoise = vNoise * 0.5 + 0.5;
 
-    // Base color blend
-    vec3 reactiveColor = mix(uColorBase, uColorBass, clamp(vDisplacement * 1.2, 0.0, 1.0));
+    vec3 deepWater = vec3(1.0, 0.05, 0.3); 
+    vec3 wavePeak  = vec3(0.0, 0.9,  1.0); 
+
+    vec3 color = mix(deepWater, wavePeak, normalizedNoise);
+
+    vec3 lightDirection = normalize(vec3(1.0, 1.0, 1.0));
+
+    float lightIntensity = max(0.2, dot(vNormal, lightDirection));
     
-    // Highlight the 5 skinny rounded peak tips with intense neon glow
-    vec3 spikeGlow = mix(uColorBass, uColorTreble, clamp(vSpikeIntensity * 1.2, 0.0, 1.0));
-    reactiveColor = mix(reactiveColor, spikeGlow, clamp(vSpikeIntensity * 2.5, 0.0, 1.0));
-
-    // Add glowing Fresnel rim highlight
-    vec3 finalColor = reactiveColor + uColorTreble * (fresnel * 1.4);
-
-    gl_FragColor = vec4(finalColor, 1.0);
+    gl_FragColor = vec4(color * lightIntensity, 1.0);
   }
 `;
 
 export const AudioSphereMaterial = shaderMaterial(
   {
     uTime: 0,
-    uBass: 0,
-    uMid: 0,
-    uTreble: 0,
-    uFresnelPower: 2.5,
-    uColorBase: new THREE.Color('#090821'),
-    uColorBass: new THREE.Color('#ff00aa'),
-    uColorMid: new THREE.Color('#7000ff'),
-    uColorTreble: new THREE.Color('#00f0ff'),
+    uAmplitude: 0.3,
+    uIsBreathing: true,
   },
   audioSphereVertexShader,
   audioSphereFragmentShader
@@ -133,16 +156,28 @@ extend({ AudioSphereMaterial });
 
 declare module '@react-three/fiber' {
   interface ThreeElements {
-    audioSphereMaterial: React.JSX.IntrinsicElements['meshStandardMaterial'] & {
+    audioSphereMaterial: ThreeElements['shaderMaterial'] & {
       uTime?: number;
-      uBass?: number;
-      uMid?: number;
-      uTreble?: number;
-      uFresnelPower?: number;
-      uColorBase?: THREE.Color;
-      uColorBass?: THREE.Color;
-      uColorMid?: THREE.Color;
-      uColorTreble?: THREE.Color;
+      wireframe?: boolean;
+      uAmplitude?: number;
+      uIsBreathing?: boolean;
     };
+  }
+}
+
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      audioSphereMaterial: {
+        uTime?: number;
+        wireframe?: boolean;
+        uAmplitude?: number;
+        uIsBreathing?: boolean;
+        attach?: string;
+        children?: React.ReactNode;
+        ref?: any;
+        key?: React.Key;
+      };
+    }
   }
 }

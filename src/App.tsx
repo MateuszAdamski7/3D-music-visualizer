@@ -1,5 +1,6 @@
 import { SceneCanvas } from './components/canvas/SceneCanvas';
 import { Overlay } from './components/ui/Overlay';
+import { CoreSettings } from './components/ui/CoreSettings';
 import { useAudioAnalyzer } from './hooks/useAudioAnalyzer';
 
 export function App() {
@@ -12,6 +13,8 @@ export function App() {
 
       {/* 2D Glassmorphism Interactive UI Overlay */}
       <Overlay onFileUpload={loadCustomFile} />
+
+      <CoreSettings />
     </main>
   );
 }
