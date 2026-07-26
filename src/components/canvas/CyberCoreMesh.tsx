@@ -7,17 +7,19 @@ import { useCoreStore } from '../../store/useCoreStore';
 export const CyberCoreMesh = ({wireframe = true}: {wireframe: boolean}) => {
 
   // Typujemy ref jako dowolny obiekt (lub podajemy typ Three.ShaderMaterial)
-  const materialRef = useRef<THREE.ShaderMaterial & { uTime: number, uAmplitude: number, uIsBreathing: boolean }>(null!)
+  const materialRef = useRef<THREE.ShaderMaterial & { uTime: number, uPerlinAmplitude: number, uIsBreathing: boolean, uPerlinFrequency: number }>(null!)
 
   const amplitude = useCoreStore((state) => state.perlinAmplitude)
   const isBreathing = useCoreStore((state) => state.isBreathing);
+  const frequency = useCoreStore((state) => state.perlinFrequency);
 
   useFrame((_, delta) => {
     if (materialRef.current) {
       // Opcja A: Dodawanie czasu delta (płynne, niezależne od liczby FPS)
       materialRef.current.uTime += delta;
-      materialRef.current.uAmplitude = amplitude;
+      materialRef.current.uPerlinAmplitude = amplitude;
       materialRef.current.uIsBreathing = isBreathing;
+      materialRef.current.uPerlinFrequency = frequency;
     }
   })
 

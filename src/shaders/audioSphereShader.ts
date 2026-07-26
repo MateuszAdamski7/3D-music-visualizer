@@ -3,7 +3,8 @@ import { extend } from '@react-three/fiber';
 
 const audioSphereVertexShader = /* glsl */ `
   uniform float uTime;
-  uniform float uAmplitude;
+  uniform float uPerlinAmplitude;
+  uniform float uPerlinFrequency;
   uniform bool uIsBreathing;
   
   
@@ -98,7 +99,10 @@ const audioSphereVertexShader = /* glsl */ `
   varying vec3 vNormal;
 
   void main() {
-    float noise = 2.0 * pnoise(position + uTime * 0.5, vec3(10.0));
+
+    vec3 noiseInputSpace = position * uPerlinFrequency;
+  
+    float noise = 2.0 * pnoise(noiseInputSpace + uTime * 0.5, vec3(10.0));
     float displacement = noise / 10.0;
 
     float breathing = 0.0;
@@ -106,13 +110,14 @@ const audioSphereVertexShader = /* glsl */ `
       breathing = 0.05 * sin(uTime * 5.0);
     }
 
-    float noiseDisplacement = displacement * uAmplitude;
+
+    float noiseDisplacement = displacement * uPerlinAmplitude;
 
     vec3 newPosition = position + normal * (noiseDisplacement + breathing);
 
     vNormal = normal;
     vPosition = newPosition;
-    vNoise = noise * uAmplitude; // Przekazujemy "surową" wysokość fali
+    vNoise = noise * uPerlinAmplitude; // Przekazujemy "surową" wysokość fali
     
     gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
   }
@@ -145,7 +150,8 @@ const audioSphereFragmentShader = /* glsl */ `
 export const AudioSphereMaterial = shaderMaterial(
   {
     uTime: 0,
-    uAmplitude: 0.3,
+    uPerlinAmplitude: 0.3,
+    uPerlinFrequency: 1,
     uIsBreathing: true,
   },
   audioSphereVertexShader,
@@ -159,7 +165,8 @@ declare module '@react-three/fiber' {
     audioSphereMaterial: ThreeElements['shaderMaterial'] & {
       uTime?: number;
       wireframe?: boolean;
-      uAmplitude?: number;
+      uPerlinAmplitude?: number;
+      uPerlinFrequency?: number;
       uIsBreathing?: boolean;
     };
   }
@@ -171,7 +178,8 @@ declare global {
       audioSphereMaterial: {
         uTime?: number;
         wireframe?: boolean;
-        uAmplitude?: number;
+        uPerlinAmplitude?: number;
+        uPerlinFrequency?: number;
         uIsBreathing?: boolean;
         attach?: string;
         children?: React.ReactNode;

@@ -21,7 +21,7 @@ export const CoreSettings = () => {
             <input type="range" min={0} max={5} step={0.01} value={perlinAmplitude} onChange={(e) => setPerlinAmplitude(Number(e.target.value))} className="w-48 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1" />
 
             <label className="text-white">Perlin Frequency</label>
-            <input type="range" min={0} max={1} step={0.01} value={perlinFrequency} onChange={(e) => setPerlinFrequency(Number(e.target.value))} className="w-48 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1" />
+            <input type="range" min={0} max={5} step={0.01} value={perlinFrequency} onChange={(e) => setPerlinFrequency(Number(e.target.value))} className="w-48 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1" />
 
             <label className="text-white">Perlin Lacunarity</label>
             <input type="range" min={0} max={1} step={0.01} value={perlinLacunarity} onChange={(e) => setPerlinLacunarity(Number(e.target.value))} className="w-48 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1" />
