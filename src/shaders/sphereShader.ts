@@ -1,11 +1,25 @@
 import { shaderMaterial } from '@react-three/drei';
 import { extend } from '@react-three/fiber';
+import * as THREE from 'three';
 
-const audioSphereVertexShader = /* glsl */ `
+const sphereVertexShader = /* glsl */ `
   uniform float uTime;
+
+  uniform float uPerlinTime;
+  uniform bool uIsPerlinEnabled;
   uniform float uPerlinAmplitude;
   uniform float uPerlinFrequency;
+  uniform vec3 uPerlinFrequencyVec;
+
+  // --- PARAMETRY FBM ---
+  uniform float uPerlinLacunarity;
+  uniform float uPerlinPersistence;
+  uniform int uPerlinOctaves;
+
+  // --- PARAMETRY BREATHING ---
   uniform bool uIsBreathing;
+  uniform float uBreathingSpeed;
+  uniform float uBreathingAmplitude;
   
   
   vec3 mod289(vec3 x)
@@ -94,50 +108,69 @@ const audioSphereVertexShader = /* glsl */ `
     return 2.2 * n_xyz;
   }
 
-  varying vec3 vPosition;
-  varying float vNoise; // Wysyłamy wysokość fali do fragment shadera!
-  varying vec3 vNormal;
-
-  void main() {
-
-    vec3 noiseInputSpace = position * uPerlinFrequency;
-  
-    float noise = 2.0 * pnoise(noiseInputSpace + uTime * 0.5, vec3(10.0));
-    float displacement = noise / 10.0;
-
-    float breathing = 0.0;
-    if (uIsBreathing) {
-      breathing = 0.05 * sin(uTime * 5.0);
-    }
-
-
-    float noiseDisplacement = displacement * uPerlinAmplitude;
-
-    vec3 newPosition = position + normal * (noiseDisplacement + breathing);
-
-    vNormal = normal;
-    vPosition = newPosition;
-    vNoise = noise * uPerlinAmplitude; // Przekazujemy "surową" wysokość fali
+  float fbm(vec3 p) {
+    float value = 0.0;
+    float amp = 1.0;
+    float freq = 1.0;
     
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+    for (int i = 0; i < 10; i++) {
+      if (i >= uPerlinOctaves) break;
+      value += pnoise(p * freq, vec3(10.0)) * amp;
+      freq *= uPerlinLacunarity;
+      amp *= uPerlinPersistence;
+    }
+    
+    return value;
   }
-`;
 
-const audioSphereFragmentShader = /* glsl */ `
-  uniform vec2 uResolution;
   varying vec3 vPosition;
   varying float vNoise;
   varying vec3 vNormal;
 
   void main() {
-    vec2 uv = gl_FragCoord.xy / uResolution;
+    float noiseDisplacement = 0.0;
+    float rawNoise = 0.0;
 
-    float normalizedNoise = vNoise * 0.5 + 0.5;
+    if (uIsPerlinEnabled) {
+      vec3 noiseInputSpace = position * uPerlinFrequency * uPerlinFrequencyVec;
+      float noise = 2.0 * fbm(noiseInputSpace + uPerlinTime * 0.5);
+      float displacement = noise / 10.0;
+      noiseDisplacement = displacement * uPerlinAmplitude;
+      // Pass raw unscaled noise so color gradient remains full-contrast regardless of uPerlinAmplitude
+      rawNoise = noise;
+    }
 
-    vec3 deepWater = vec3(1.0, 0.05, 0.3); 
-    vec3 wavePeak  = vec3(0.0, 0.9,  1.0); 
+    float breathing = 0.0;
+    if (uIsBreathing) {
+      breathing = uBreathingAmplitude * sin(uBreathingSpeed);
+    }
 
-    vec3 color = mix(deepWater, wavePeak, normalizedNoise);
+    vec3 newPosition = position + normal * (noiseDisplacement + breathing);
+
+    vNormal = normal;
+    vPosition = newPosition;
+    vNoise = rawNoise;
+    
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+  }
+`;
+
+const sphereFragmentShader = /* glsl */ `
+  uniform vec3 uColorLow;
+  uniform vec3 uColorHigh;
+
+  varying vec3 vPosition;
+  varying float vNoise;
+  varying vec3 vNormal;
+
+  void main() {
+    // Map noise from roughly [-1.0, 1.0] range to [0.0, 1.0]
+    float normalizedNoise = clamp(vNoise * 0.5 + 0.5, 0.0, 1.0);
+
+    // Apply smoothstep to enhance contrast so valleys reach deep red and peaks reach light blue
+    float colorFactor = smoothstep(0.15, 0.85, normalizedNoise);
+
+    vec3 color = mix(uColorLow, uColorHigh, colorFactor);
 
     vec3 lightDirection = normalize(vec3(1.0, 1.0, 1.0));
 
@@ -147,27 +180,47 @@ const audioSphereFragmentShader = /* glsl */ `
   }
 `;
 
-export const AudioSphereMaterial = shaderMaterial(
+export const SphereMaterial = shaderMaterial(
   {
     uTime: 0,
+    uPerlinTime: 1.0,
+    uIsPerlinEnabled: true,
     uPerlinAmplitude: 0.3,
     uPerlinFrequency: 1,
+    uPerlinFrequencyVec: new THREE.Vector3(1, 1, 1),
     uIsBreathing: true,
+    uBreathingSpeed: 1.0,
+    uBreathingAmplitude: 0.05,
+    uPerlinLacunarity: 2.0,
+    uPerlinPersistence: 0.5,
+    uPerlinOctaves: 6,
+    uColorLow: new THREE.Color('#ff1a40'),
+    uColorHigh: new THREE.Color('#00d9ff'),
   },
-  audioSphereVertexShader,
-  audioSphereFragmentShader
+  sphereVertexShader,
+  sphereFragmentShader
 );
 
-extend({ AudioSphereMaterial });
+extend({ SphereMaterial });
 
 declare module '@react-three/fiber' {
   interface ThreeElements {
-    audioSphereMaterial: ThreeElements['shaderMaterial'] & {
+    sphereMaterial: ThreeElements['shaderMaterial'] & {
       uTime?: number;
+      uPerlinTime?: number;
       wireframe?: boolean;
+      uIsPerlinEnabled?: boolean;
       uPerlinAmplitude?: number;
       uPerlinFrequency?: number;
+      uPerlinFrequencyVec?: THREE.Vector3;
       uIsBreathing?: boolean;
+      uBreathingSpeed?: number;
+      uBreathingAmplitude?: number;
+      uPerlinLacunarity?: number;
+      uPerlinPersistence?: number;
+      uPerlinOctaves?: number;
+      uColorLow?: THREE.Color;
+      uColorHigh?: THREE.Color;
     };
   }
 }
@@ -175,16 +228,26 @@ declare module '@react-three/fiber' {
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      audioSphereMaterial: {
+      sphereMaterial: {
         uTime?: number;
+        uPerlinTime?: number;
         wireframe?: boolean;
+        uIsPerlinEnabled?: boolean;
         uPerlinAmplitude?: number;
         uPerlinFrequency?: number;
+        uPerlinFrequencyVec?: THREE.Vector3;
         uIsBreathing?: boolean;
+        uBreathingSpeed?: number;
+        uBreathingAmplitude?: number;
         attach?: string;
         children?: React.ReactNode;
         ref?: any;
         key?: React.Key;
+        uPerlinLacunarity?: number;
+        uPerlinPersistence?: number;
+        uPerlinOctaves?: number;
+        uColorLow?: THREE.Color;
+        uColorHigh?: THREE.Color;
       };
     }
   }

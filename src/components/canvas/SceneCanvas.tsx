@@ -26,17 +26,13 @@ export const SceneCanvas = ({ getAudioData: _getAudioData }: SceneCanvasProps) =
       >
         {/* Background & Atmospheric Fog */}
         <color attach="background" args={['#030014']} />
-        {/* <fog attach="fog" args={['#030014', 12, 40]} /> */}
+        <fog attach="fog" args={['#030014', 12, 40]} />
 
         {/* Scene Lighting */}
-        {/* <EnvironmentLights /> */}
+        <EnvironmentLights />
 
         {/* Floor Horizon Grid */}
-        {/* <CyberGrid /> */}
-        <mesh position={[0, -3, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[60, 60]} />
-          <meshStandardMaterial color="red" />
-        </mesh>
+        <CyberGrid />
 
         {/* Central Deforming GLSL CyberCore Mesh */}
         <CyberCoreMesh wireframe={wireframe}/>
