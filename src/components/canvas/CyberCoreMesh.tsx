@@ -8,6 +8,9 @@ export const CyberCoreMesh = ({ wireframe = true }: { wireframe: boolean }) => {
   const perlinTimeRef = useRef(0);
   const breathingSpeedRef = useRef(0);
 
+  const icosahedronRadius = useCoreStore((state) => state.icosahedronRadius);
+  const icosahedronDetail = useCoreStore((state) => state.icosahedronDetail);
+
   const materialRef = useRef<THREE.ShaderMaterial & {
     uTime: number;
     uPerlinTime: number;
@@ -24,6 +27,24 @@ export const CyberCoreMesh = ({ wireframe = true }: { wireframe: boolean }) => {
     uPerlinOctaves: number;
     uColorLow: THREE.Color;
     uColorHigh: THREE.Color;
+
+    uKeyLightIntensity: number;
+    uFillLightColor: THREE.Color;
+    uFillLightIntensity: number;
+    uRimColor: THREE.Color;
+    uRimPower: number;
+    uRimIntensity: number;
+    uSpecularIntensity: number;
+    uShininess: number;
+    uEmissiveColor: THREE.Color;
+    uEmissiveIntensity: number;
+    uValleyEmissiveIntensity: number;
+
+    uIsContourEnabled: boolean;
+    uContourColor: THREE.Color;
+    uContourCount: number;
+    uContourWidth: number;
+    uContourIntensity: number;
   }>(null!);
 
   useFrame((_, delta) => {
@@ -51,16 +72,34 @@ export const CyberCoreMesh = ({ wireframe = true }: { wireframe: boolean }) => {
 
       materialRef.current.uColorLow.set(state.perlinColorLow);
       materialRef.current.uColorHigh.set(state.perlinColorHigh);
+
+      materialRef.current.uKeyLightIntensity = state.keyLightIntensity;
+      materialRef.current.uFillLightColor.set(state.fillLightColor);
+      materialRef.current.uFillLightIntensity = state.fillLightIntensity;
+      materialRef.current.uRimColor.set(state.rimColor);
+      materialRef.current.uRimPower = state.rimPower;
+      materialRef.current.uRimIntensity = state.rimIntensity;
+      materialRef.current.uSpecularIntensity = state.specularIntensity;
+      materialRef.current.uShininess = state.shininess;
+      materialRef.current.uEmissiveColor.set(state.emissiveColor);
+      materialRef.current.uEmissiveIntensity = state.emissiveIntensity;
+      materialRef.current.uValleyEmissiveIntensity = state.valleyEmissiveIntensity;
+
+      materialRef.current.uIsContourEnabled = state.isContourEnabled;
+      materialRef.current.uContourColor.set(state.contourColor);
+      materialRef.current.uContourCount = state.contourCount;
+      materialRef.current.uContourWidth = state.contourWidth;
+      materialRef.current.uContourIntensity = state.contourIntensity;
     }
   });
 
   return (
     <group position={[0, 0, 0]}>
-      {/* SphereGeometry(radius 1.5, 256x256 segments) -> 65,536 vertices for ultra-high-definition smooth peak rendering */}
       <mesh>
-        <icosahedronGeometry args={[1.5, 30]} />
+        <icosahedronGeometry args={[icosahedronRadius, icosahedronDetail]} />
         <sphereMaterial ref={materialRef} wireframe={wireframe} />
       </mesh>
     </group>
   );
 };
+

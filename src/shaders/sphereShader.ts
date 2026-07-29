@@ -126,6 +126,7 @@ const sphereVertexShader = /* glsl */ `
   varying vec3 vPosition;
   varying float vNoise;
   varying vec3 vNormal;
+  varying vec3 vViewPosition;
 
   void main() {
     float noiseDisplacement = 0.0;
@@ -147,11 +148,13 @@ const sphereVertexShader = /* glsl */ `
 
     vec3 newPosition = position + normal * (noiseDisplacement + breathing);
 
-    vNormal = normal;
+    vec4 mvPosition = modelViewMatrix * vec4(newPosition, 1.0);
+    vViewPosition = -mvPosition.xyz;
+    vNormal = normalize(normalMatrix * normal);
     vPosition = newPosition;
     vNoise = rawNoise;
     
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+    gl_Position = projectionMatrix * mvPosition;
   }
 `;
 
@@ -159,24 +162,88 @@ const sphereFragmentShader = /* glsl */ `
   uniform vec3 uColorLow;
   uniform vec3 uColorHigh;
 
+  uniform vec3 uKeyLightDir;
+  uniform float uKeyLightIntensity;
+
+  uniform vec3 uFillLightDir;
+  uniform vec3 uFillLightColor;
+  uniform float uFillLightIntensity;
+
+  uniform vec3 uRimColor;
+  uniform float uRimPower;
+  uniform float uRimIntensity;
+
+  uniform float uSpecularIntensity;
+  uniform float uShininess;
+
+  uniform vec3 uEmissiveColor;
+  uniform float uEmissiveIntensity;
+  uniform float uValleyEmissiveIntensity;
+
+  uniform bool uIsContourEnabled;
+  uniform vec3 uContourColor;
+  uniform float uContourCount;
+  uniform float uContourWidth;
+  uniform float uContourIntensity;
+
   varying vec3 vPosition;
   varying float vNoise;
   varying vec3 vNormal;
+  varying vec3 vViewPosition;
 
   void main() {
     // Map noise from roughly [-1.0, 1.0] range to [0.0, 1.0]
     float normalizedNoise = clamp(vNoise * 0.5 + 0.5, 0.0, 1.0);
 
-    // Apply smoothstep to enhance contrast so valleys reach deep red and peaks reach light blue
+    // Apply smoothstep to enhance contrast so valleys reach deep colorLow and peaks reach colorHigh
     float colorFactor = smoothstep(0.15, 0.85, normalizedNoise);
 
-    vec3 color = mix(uColorLow, uColorHigh, colorFactor);
+    vec3 baseColor = mix(uColorLow, uColorHigh, colorFactor);
 
-    vec3 lightDirection = normalize(vec3(1.0, 1.0, 1.0));
+    vec3 N = normalize(vNormal);
+    vec3 V = normalize(vViewPosition);
 
-    float lightIntensity = max(0.2, dot(vNormal, lightDirection));
+    // Key Light (Primary Directional Light)
+    vec3 L_key = normalize(uKeyLightDir);
+    float NdotL_key = max(0.0, dot(N, L_key));
+    vec3 keyDiffuse = baseColor * NdotL_key * uKeyLightIntensity;
+
+    // Fill Light (Secondary Directional Cool Light)
+    vec3 L_fill = normalize(uFillLightDir);
+    float NdotL_fill = max(0.0, dot(N, L_fill));
+    vec3 fillDiffuse = uFillLightColor * NdotL_fill * uFillLightIntensity;
+
+    // Ambient Floor
+    vec3 ambient = baseColor * 0.15;
+
+    // Specular Highlight (Blinn-Phong)
+    vec3 H = normalize(L_key + V);
+    float NdotH = max(0.0, dot(N, H));
+    float specFactor = pow(NdotH, max(1.0, uShininess));
+    vec3 specular = vec3(1.0) * specFactor * uSpecularIntensity;
+
+    // Rim Light (Fresnel Glow around sphere outline)
+    float rimFactor = 1.0 - clamp(dot(N, V), 0.0, 1.0);
+    rimFactor = pow(rimFactor, max(0.1, uRimPower));
+    vec3 rim = uRimColor * rimFactor * uRimIntensity;
+
+    // Emissive Light (Overall Emissive + Inner Valley Crevice Glow)
+    vec3 baseEmissive = uEmissiveColor * uEmissiveIntensity;
+    float valleyFactor = pow(1.0 - colorFactor, 2.0); // Deep valleys emit intense inner glow
+    vec3 valleyEmissive = uEmissiveColor * valleyFactor * uValleyEmissiveIntensity;
+    vec3 emissive = baseEmissive + valleyEmissive;
+
+    // Topographic Contour Iso-Lines
+    vec3 contourGlow = vec3(0.0);
+    if (uIsContourEnabled) {
+      float contourSine = sin(normalizedNoise * 3.14159265 * uContourCount);
+      float line = smoothstep(1.0 - max(0.01, uContourWidth) * 0.25, 1.0, abs(contourSine));
+      contourGlow = uContourColor * line * uContourIntensity;
+    }
+
+    vec3 finalColor = keyDiffuse + fillDiffuse + ambient + specular + rim + emissive + contourGlow;
     
-    gl_FragColor = vec4(color * lightIntensity, 1.0);
+    gl_FragColor = vec4(finalColor, 1.0);
   }
 `;
 
@@ -196,6 +263,30 @@ export const SphereMaterial = shaderMaterial(
     uPerlinOctaves: 6,
     uColorLow: new THREE.Color('#ff1a40'),
     uColorHigh: new THREE.Color('#00d9ff'),
+
+    uKeyLightDir: new THREE.Vector3(1.0, 1.0, 1.0),
+    uKeyLightIntensity: 0.8,
+
+    uFillLightDir: new THREE.Vector3(-1.0, -0.5, -0.8),
+    uFillLightColor: new THREE.Color('#0055ff'),
+    uFillLightIntensity: 0.4,
+
+    uRimColor: new THREE.Color('#00ffff'),
+    uRimPower: 3.0,
+    uRimIntensity: 0.8,
+
+    uSpecularIntensity: 0.5,
+    uShininess: 32.0,
+
+    uEmissiveColor: new THREE.Color('#ff0055'),
+    uEmissiveIntensity: 0.2,
+    uValleyEmissiveIntensity: 0.5,
+
+    uIsContourEnabled: true,
+    uContourColor: new THREE.Color('#ffffff'),
+    uContourCount: 12.0,
+    uContourWidth: 0.15,
+    uContourIntensity: 1.0,
   },
   sphereVertexShader,
   sphereFragmentShader
@@ -203,52 +294,56 @@ export const SphereMaterial = shaderMaterial(
 
 extend({ SphereMaterial });
 
+type SphereMaterialType = {
+  uTime?: number;
+  uPerlinTime?: number;
+  wireframe?: boolean;
+  uIsPerlinEnabled?: boolean;
+  uPerlinAmplitude?: number;
+  uPerlinFrequency?: number;
+  uPerlinFrequencyVec?: THREE.Vector3;
+  uIsBreathing?: boolean;
+  uBreathingSpeed?: number;
+  uBreathingAmplitude?: number;
+  uPerlinLacunarity?: number;
+  uPerlinPersistence?: number;
+  uPerlinOctaves?: number;
+  uColorLow?: THREE.Color;
+  uColorHigh?: THREE.Color;
+  uKeyLightDir?: THREE.Vector3;
+  uKeyLightIntensity?: number;
+  uFillLightDir?: THREE.Vector3;
+  uFillLightColor?: THREE.Color;
+  uFillLightIntensity?: number;
+  uRimColor?: THREE.Color;
+  uRimPower?: number;
+  uRimIntensity?: number;
+  uSpecularIntensity?: number;
+  uShininess?: number;
+  uEmissiveColor?: THREE.Color;
+  uEmissiveIntensity?: number;
+  uValleyEmissiveIntensity?: number;
+  uIsContourEnabled?: boolean;
+  uContourColor?: THREE.Color;
+  uContourCount?: number;
+  uContourWidth?: number;
+  uContourIntensity?: number;
+  attach?: string;
+  children?: React.ReactNode;
+  ref?: any;
+  key?: React.Key;
+};
+
 declare module '@react-three/fiber' {
   interface ThreeElements {
-    sphereMaterial: ThreeElements['shaderMaterial'] & {
-      uTime?: number;
-      uPerlinTime?: number;
-      wireframe?: boolean;
-      uIsPerlinEnabled?: boolean;
-      uPerlinAmplitude?: number;
-      uPerlinFrequency?: number;
-      uPerlinFrequencyVec?: THREE.Vector3;
-      uIsBreathing?: boolean;
-      uBreathingSpeed?: number;
-      uBreathingAmplitude?: number;
-      uPerlinLacunarity?: number;
-      uPerlinPersistence?: number;
-      uPerlinOctaves?: number;
-      uColorLow?: THREE.Color;
-      uColorHigh?: THREE.Color;
-    };
+    sphereMaterial: ThreeElements['shaderMaterial'] & SphereMaterialType;
   }
 }
 
 declare global {
   namespace JSX {
     interface IntrinsicElements {
-      sphereMaterial: {
-        uTime?: number;
-        uPerlinTime?: number;
-        wireframe?: boolean;
-        uIsPerlinEnabled?: boolean;
-        uPerlinAmplitude?: number;
-        uPerlinFrequency?: number;
-        uPerlinFrequencyVec?: THREE.Vector3;
-        uIsBreathing?: boolean;
-        uBreathingSpeed?: number;
-        uBreathingAmplitude?: number;
-        attach?: string;
-        children?: React.ReactNode;
-        ref?: any;
-        key?: React.Key;
-        uPerlinLacunarity?: number;
-        uPerlinPersistence?: number;
-        uPerlinOctaves?: number;
-        uColorLow?: THREE.Color;
-        uColorHigh?: THREE.Color;
-      };
+      sphereMaterial: SphereMaterialType;
     }
   }
 }

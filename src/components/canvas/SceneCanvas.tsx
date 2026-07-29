@@ -32,7 +32,7 @@ export const SceneCanvas = ({ getAudioData: _getAudioData }: SceneCanvasProps) =
         <EnvironmentLights />
 
         {/* Floor Horizon Grid */}
-        <CyberGrid />
+        {/* <CyberGrid /> */}
 
         {/* Central Deforming GLSL CyberCore Mesh */}
         <CyberCoreMesh wireframe={wireframe}/>

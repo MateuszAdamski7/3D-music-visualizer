@@ -431,17 +431,433 @@ const BreathingAmplitudeControl = memo(() => {
     );
 });
 
+const LightingControls = memo(() => {
+    const keyLightIntensity = useCoreStore((state) => state.keyLightIntensity);
+    const setKeyLightIntensity = useCoreStore((state) => state.setKeyLightIntensity);
+
+    const fillLightColor = useCoreStore((state) => state.fillLightColor);
+    const setFillLightColor = useCoreStore((state) => state.setFillLightColor);
+    const fillLightIntensity = useCoreStore((state) => state.fillLightIntensity);
+    const setFillLightIntensity = useCoreStore((state) => state.setFillLightIntensity);
+
+    const rimColor = useCoreStore((state) => state.rimColor);
+    const setRimColor = useCoreStore((state) => state.setRimColor);
+    const rimPower = useCoreStore((state) => state.rimPower);
+    const setRimPower = useCoreStore((state) => state.setRimPower);
+    const rimIntensity = useCoreStore((state) => state.rimIntensity);
+    const setRimIntensity = useCoreStore((state) => state.setRimIntensity);
+
+    const specularIntensity = useCoreStore((state) => state.specularIntensity);
+    const setSpecularIntensity = useCoreStore((state) => state.setSpecularIntensity);
+    const shininess = useCoreStore((state) => state.shininess);
+    const setShininess = useCoreStore((state) => state.setShininess);
+
+    const emissiveColor = useCoreStore((state) => state.emissiveColor);
+    const setEmissiveColor = useCoreStore((state) => state.setEmissiveColor);
+    const emissiveIntensity = useCoreStore((state) => state.emissiveIntensity);
+    const setEmissiveIntensity = useCoreStore((state) => state.setEmissiveIntensity);
+    const valleyEmissiveIntensity = useCoreStore((state) => state.valleyEmissiveIntensity);
+    const setValleyEmissiveIntensity = useCoreStore((state) => state.setValleyEmissiveIntensity);
+
+    return (
+        <div className="flex flex-col space-y-3">
+            {/* Key Light */}
+            <div className="flex flex-col space-y-1">
+                <label className="text-white font-semibold text-xs text-cyan-300">Key Light (Main)</label>
+                <div className="flex items-center space-x-2">
+                    <span className="text-gray-400 text-xs w-16">Intensity</span>
+                    <input
+                        type="range"
+                        min={0}
+                        max={2}
+                        step={0.05}
+                        value={keyLightIntensity}
+                        onChange={(e) => setKeyLightIntensity(Number(e.target.value))}
+                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer"
+                    />
+                    <input
+                        type="number"
+                        step={0.05}
+                        value={keyLightIntensity}
+                        onChange={(e) => setKeyLightIntensity(Number(e.target.value))}
+                        className="w-14 border border-gray-600 bg-gray-900 text-white text-xs rounded-md px-1 py-1"
+                    />
+                </div>
+            </div>
+
+            {/* Fill Light */}
+            <div className="flex flex-col space-y-1 border-t border-gray-700/60 pt-2">
+                <label className="text-white font-semibold text-xs text-cyan-300">Fill Light (Shadow Tint)</label>
+                <div className="flex items-center justify-between border border-gray-600 bg-gray-900 rounded-md p-1">
+                    <span className="text-xs text-gray-300 ml-1">Color</span>
+                    <div className="flex items-center space-x-1">
+                        <input
+                            type="color"
+                            value={fillLightColor}
+                            onChange={(e) => setFillLightColor(e.target.value)}
+                            className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent p-0"
+                        />
+                        <input
+                            type="text"
+                            value={fillLightColor}
+                            onChange={(e) => setFillLightColor(e.target.value)}
+                            className="w-14 bg-transparent text-white text-xs font-mono uppercase focus:outline-none"
+                        />
+                    </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                    <span className="text-gray-400 text-xs w-16">Intensity</span>
+                    <input
+                        type="range"
+                        min={0}
+                        max={2}
+                        step={0.05}
+                        value={fillLightIntensity}
+                        onChange={(e) => setFillLightIntensity(Number(e.target.value))}
+                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer"
+                    />
+                    <input
+                        type="number"
+                        step={0.05}
+                        value={fillLightIntensity}
+                        onChange={(e) => setFillLightIntensity(Number(e.target.value))}
+                        className="w-14 border border-gray-600 bg-gray-900 text-white text-xs rounded-md px-1 py-1"
+                    />
+                </div>
+            </div>
+
+            {/* Rim Light */}
+            <div className="flex flex-col space-y-1 border-t border-gray-700/60 pt-2">
+                <label className="text-white font-semibold text-xs text-cyan-300">Rim Light (Fresnel Outline)</label>
+                <div className="flex items-center justify-between border border-gray-600 bg-gray-900 rounded-md p-1">
+                    <span className="text-xs text-gray-300 ml-1">Color</span>
+                    <div className="flex items-center space-x-1">
+                        <input
+                            type="color"
+                            value={rimColor}
+                            onChange={(e) => setRimColor(e.target.value)}
+                            className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent p-0"
+                        />
+                        <input
+                            type="text"
+                            value={rimColor}
+                            onChange={(e) => setRimColor(e.target.value)}
+                            className="w-14 bg-transparent text-white text-xs font-mono uppercase focus:outline-none"
+                        />
+                    </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                    <span className="text-gray-400 text-xs w-16">Intensity</span>
+                    <input
+                        type="range"
+                        min={0}
+                        max={3}
+                        step={0.05}
+                        value={rimIntensity}
+                        onChange={(e) => setRimIntensity(Number(e.target.value))}
+                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer"
+                    />
+                    <input
+                        type="number"
+                        step={0.05}
+                        value={rimIntensity}
+                        onChange={(e) => setRimIntensity(Number(e.target.value))}
+                        className="w-14 border border-gray-600 bg-gray-900 text-white text-xs rounded-md px-1 py-1"
+                    />
+                </div>
+                <div className="flex items-center space-x-2">
+                    <span className="text-gray-400 text-xs w-16">Power</span>
+                    <input
+                        type="range"
+                        min={0.5}
+                        max={8}
+                        step={0.1}
+                        value={rimPower}
+                        onChange={(e) => setRimPower(Number(e.target.value))}
+                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer"
+                    />
+                    <input
+                        type="number"
+                        step={0.1}
+                        value={rimPower}
+                        onChange={(e) => setRimPower(Number(e.target.value))}
+                        className="w-14 border border-gray-600 bg-gray-900 text-white text-xs rounded-md px-1 py-1"
+                    />
+                </div>
+            </div>
+
+            {/* Specular */}
+            <div className="flex flex-col space-y-1 border-t border-gray-700/60 pt-2">
+                <label className="text-white font-semibold text-xs text-cyan-300">Specular (Gloss Highlight)</label>
+                <div className="flex items-center space-x-2">
+                    <span className="text-gray-400 text-xs w-16">Intensity</span>
+                    <input
+                        type="range"
+                        min={0}
+                        max={2}
+                        step={0.05}
+                        value={specularIntensity}
+                        onChange={(e) => setSpecularIntensity(Number(e.target.value))}
+                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer"
+                    />
+                    <input
+                        type="number"
+                        step={0.05}
+                        value={specularIntensity}
+                        onChange={(e) => setSpecularIntensity(Number(e.target.value))}
+                        className="w-14 border border-gray-600 bg-gray-900 text-white text-xs rounded-md px-1 py-1"
+                    />
+                </div>
+                <div className="flex items-center space-x-2">
+                    <span className="text-gray-400 text-xs w-16">Shininess</span>
+                    <input
+                        type="range"
+                        min={1}
+                        max={128}
+                        step={1}
+                        value={shininess}
+                        onChange={(e) => setShininess(Number(e.target.value))}
+                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer"
+                    />
+                    <input
+                        type="number"
+                        step={1}
+                        value={shininess}
+                        onChange={(e) => setShininess(Number(e.target.value))}
+                        className="w-14 border border-gray-600 bg-gray-900 text-white text-xs rounded-md px-1 py-1"
+                    />
+                </div>
+            </div>
+
+            {/* Emissive */}
+            <div className="flex flex-col space-y-1 border-t border-gray-700/60 pt-2">
+                <label className="text-white font-semibold text-xs text-cyan-300">Emissive Light (Core & Valley Glow)</label>
+                <div className="flex items-center justify-between border border-gray-600 bg-gray-900 rounded-md p-1">
+                    <span className="text-xs text-gray-300 ml-1">Color</span>
+                    <div className="flex items-center space-x-1">
+                        <input
+                            type="color"
+                            value={emissiveColor}
+                            onChange={(e) => setEmissiveColor(e.target.value)}
+                            className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent p-0"
+                        />
+                        <input
+                            type="text"
+                            value={emissiveColor}
+                            onChange={(e) => setEmissiveColor(e.target.value)}
+                            className="w-14 bg-transparent text-white text-xs font-mono uppercase focus:outline-none"
+                        />
+                    </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                    <span className="text-gray-400 text-xs w-16">Sphere Base</span>
+                    <input
+                        type="range"
+                        min={0}
+                        max={2}
+                        step={0.05}
+                        value={emissiveIntensity}
+                        onChange={(e) => setEmissiveIntensity(Number(e.target.value))}
+                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer"
+                    />
+                    <input
+                        type="number"
+                        step={0.05}
+                        value={emissiveIntensity}
+                        onChange={(e) => setEmissiveIntensity(Number(e.target.value))}
+                        className="w-14 border border-gray-600 bg-gray-900 text-white text-xs rounded-md px-1 py-1"
+                    />
+                </div>
+                <div className="flex items-center space-x-2">
+                    <span className="text-gray-400 text-xs w-16">Valley Glow</span>
+                    <input
+                        type="range"
+                        min={0}
+                        max={2}
+                        step={0.05}
+                        value={valleyEmissiveIntensity}
+                        onChange={(e) => setValleyEmissiveIntensity(Number(e.target.value))}
+                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer"
+                    />
+                    <input
+                        type="number"
+                        step={0.05}
+                        value={valleyEmissiveIntensity}
+                        onChange={(e) => setValleyEmissiveIntensity(Number(e.target.value))}
+                        className="w-14 border border-gray-600 bg-gray-900 text-white text-xs rounded-md px-1 py-1"
+                    />
+                </div>
+            </div>
+        </div>
+    );
+});
+
+const ContourControls = memo(() => {
+    const contourColor = useCoreStore((state) => state.contourColor);
+    const setContourColor = useCoreStore((state) => state.setContourColor);
+    const contourCount = useCoreStore((state) => state.contourCount);
+    const setContourCount = useCoreStore((state) => state.setContourCount);
+    const contourWidth = useCoreStore((state) => state.contourWidth);
+    const setContourWidth = useCoreStore((state) => state.setContourWidth);
+    const contourIntensity = useCoreStore((state) => state.contourIntensity);
+    const setContourIntensity = useCoreStore((state) => state.setContourIntensity);
+
+    return (
+        <div className="flex flex-col space-y-3">
+            <div className="flex items-center justify-between border border-gray-600 bg-gray-900 rounded-md p-1">
+                <span className="text-xs text-gray-300 ml-1">Color</span>
+                <div className="flex items-center space-x-1">
+                    <input
+                        type="color"
+                        value={contourColor}
+                        onChange={(e) => setContourColor(e.target.value)}
+                        className="w-5 h-5 rounded cursor-pointer border-0 bg-transparent p-0"
+                    />
+                    <input
+                        type="text"
+                        value={contourColor}
+                        onChange={(e) => setContourColor(e.target.value)}
+                        className="w-14 bg-transparent text-white text-xs font-mono uppercase focus:outline-none"
+                    />
+                </div>
+            </div>
+            <div className="flex items-center space-x-2">
+                <span className="text-gray-400 text-xs w-16">Count</span>
+                <input
+                    type="range"
+                    min={1}
+                    max={40}
+                    step={1}
+                    value={contourCount}
+                    onChange={(e) => setContourCount(Number(e.target.value))}
+                    className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer"
+                />
+                <input
+                    type="number"
+                    step={1}
+                    value={contourCount}
+                    onChange={(e) => setContourCount(Number(e.target.value))}
+                    className="w-14 border border-gray-600 bg-gray-900 text-white text-xs rounded-md px-1 py-1"
+                />
+            </div>
+            <div className="flex items-center space-x-2">
+                <span className="text-gray-400 text-xs w-16">Width</span>
+                <input
+                    type="range"
+                    min={0.01}
+                    max={0.5}
+                    step={0.01}
+                    value={contourWidth}
+                    onChange={(e) => setContourWidth(Number(e.target.value))}
+                    className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer"
+                />
+                <input
+                    type="number"
+                    step={0.01}
+                    value={contourWidth}
+                    onChange={(e) => setContourWidth(Number(e.target.value))}
+                    className="w-14 border border-gray-600 bg-gray-900 text-white text-xs rounded-md px-1 py-1"
+                />
+            </div>
+            <div className="flex items-center space-x-2">
+                <span className="text-gray-400 text-xs w-16">Intensity</span>
+                <input
+                    type="range"
+                    min={0}
+                    max={3}
+                    step={0.05}
+                    value={contourIntensity}
+                    onChange={(e) => setContourIntensity(Number(e.target.value))}
+                    className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer"
+                />
+                <input
+                    type="number"
+                    step={0.05}
+                    value={contourIntensity}
+                    onChange={(e) => setContourIntensity(Number(e.target.value))}
+                    className="w-14 border border-gray-600 bg-gray-900 text-white text-xs rounded-md px-1 py-1"
+                />
+            </div>
+        </div>
+    );
+});
+
+const GeometryControls = memo(() => {
+    const detail = useCoreStore((state) => state.icosahedronDetail);
+    const setDetail = useCoreStore((state) => state.setIcosahedronDetail);
+    const radius = useCoreStore((state) => state.icosahedronRadius);
+    const setRadius = useCoreStore((state) => state.setIcosahedronRadius);
+
+    return (
+        <div className="flex flex-col space-y-3">
+            <div className="flex flex-col space-y-1">
+                <label className="text-white font-semibold text-xs text-cyan-300">Icosahedron Detail (Subdivisions)</label>
+                <div className="flex items-center space-x-2">
+                    <input
+                        type="range"
+                        min={0}
+                        max={150}
+                        step={1}
+                        value={detail}
+                        onChange={(e) => setDetail(Number(e.target.value))}
+                        className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer"
+                    />
+                    <input
+                        type="number"
+                        min={0}
+                        max={200}
+                        step={1}
+                        value={detail}
+                        onChange={(e) => setDetail(Number(e.target.value))}
+                        className="w-16 border border-gray-600 bg-gray-900 text-white text-xs rounded-md px-1 py-1"
+                    />
+                </div>
+            </div>
+
+            <div className="flex flex-col space-y-1 border-t border-gray-700/60 pt-2">
+                <label className="text-white font-semibold text-xs text-cyan-300">Sphere Radius</label>
+                <div className="flex items-center space-x-2">
+                    <input
+                        type="range"
+                        min={0.5}
+                        max={15}
+                        step={0.1}
+                        value={radius}
+                        onChange={(e) => setRadius(Number(e.target.value))}
+                        className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer"
+                    />
+                    <input
+                        type="number"
+                        step={0.1}
+                        value={radius}
+                        onChange={(e) => setRadius(Number(e.target.value))}
+                        className="w-16 border border-gray-600 bg-gray-900 text-white text-xs rounded-md px-1 py-1"
+                    />
+                </div>
+            </div>
+        </div>
+    );
+});
+
 export const CoreSettings = () => {
     const [isPerlinOpen, setIsPerlinOpen] = useState(true);
     const [isBreathingOpen, setIsBreathingOpen] = useState(true);
+    const [isLightingOpen, setIsLightingOpen] = useState(true);
+    const [isContourOpen, setIsContourOpen] = useState(true);
+    const [isGeometryOpen, setIsGeometryOpen] = useState(true);
 
     const isPerlinEnabled = useCoreStore((state) => state.isPerlinEnabled);
     const togglePerlinEnabled = useCoreStore((state) => state.togglePerlinEnabled);
     const isBreathing = useCoreStore((state) => state.isBreathing);
     const toggleBreathing = useCoreStore((state) => state.toggleBreathing);
+    const isContourEnabled = useCoreStore((state) => state.isContourEnabled);
+    const toggleContourEnabled = useCoreStore((state) => state.toggleContourEnabled);
 
     const resetPerlin = useCoreStore((state) => state.resetPerlin);
     const resetBreathing = useCoreStore((state) => state.resetBreathing);
+    const resetLighting = useCoreStore((state) => state.resetLighting);
+    const resetContour = useCoreStore((state) => state.resetContour);
+    const resetGeometry = useCoreStore((state) => state.resetGeometry);
     const resetAll = useCoreStore((state) => state.resetAll);
 
     return (
@@ -457,6 +873,52 @@ export const CoreSettings = () => {
                     <RotateCcw className="w-3 h-3" />
                     <span>Reset All</span>
                 </button>
+            </div>
+
+            {/* Foldable Geometry Folder */}
+            <div className="border border-gray-700 rounded-lg overflow-hidden bg-gray-900/40">
+                <div className="flex items-center justify-between p-2.5 bg-gray-700/60 hover:bg-gray-700 transition-colors text-white font-semibold text-sm select-none">
+                    <button
+                        type="button"
+                        onClick={() => setIsGeometryOpen(!isGeometryOpen)}
+                        className="flex items-center space-x-2 text-left"
+                    >
+                        <Folder className="w-4 h-4 text-cyan-400" />
+                        <span>Geometry & Mesh</span>
+                        <motion.div
+                            animate={{ rotate: isGeometryOpen ? 0 : -90 }}
+                            transition={{ duration: 0.2 }}
+                            className="ml-1 flex items-center"
+                        >
+                            <ChevronDown className="w-4 h-4 text-gray-400" />
+                        </motion.div>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={resetGeometry}
+                        className="px-2 py-0.5 text-xs text-gray-300 hover:text-white bg-gray-800 hover:bg-gray-600 rounded transition-colors flex items-center space-x-1 border border-gray-600/50"
+                        title="Reset all geometry settings to defaults"
+                    >
+                        <RotateCcw className="w-3 h-3" />
+                        <span>Reset Folder</span>
+                    </button>
+                </div>
+
+                <AnimatePresence initial={false}>
+                    {isGeometryOpen && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.25, ease: "easeInOut" }}
+                            className="overflow-hidden bg-gray-800/50 border-t border-gray-700"
+                        >
+                            <div className="p-3 flex flex-col space-y-4 max-h-60 overflow-y-auto pr-1">
+                                <GeometryControls />
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
 
             {/* Foldable Perlin Folder */}
@@ -506,7 +968,7 @@ export const CoreSettings = () => {
                             transition={{ duration: 0.25, ease: "easeInOut" }}
                             className="overflow-hidden bg-gray-800/50 border-t border-gray-700"
                         >
-                            <div className="p-3 flex flex-col space-y-4">
+                            <div className="p-3 flex flex-col space-y-4 max-h-60 overflow-y-auto pr-1">
                                 <ColorControl />
                                 <TimeControl />
                                 <AmplitudeControl />
@@ -568,9 +1030,110 @@ export const CoreSettings = () => {
                             transition={{ duration: 0.25, ease: "easeInOut" }}
                             className="overflow-hidden bg-gray-800/50 border-t border-gray-700"
                         >
-                            <div className="p-3 flex flex-col space-y-4">
+                            <div className="p-3 flex flex-col space-y-4 max-h-60 overflow-y-auto pr-1">
                                 <BreathingSpeedControl />
                                 <BreathingAmplitudeControl />
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+
+            {/* Foldable Lighting Folder */}
+            <div className="border border-gray-700 rounded-lg overflow-hidden bg-gray-900/40">
+                <div className="flex items-center justify-between p-2.5 bg-gray-700/60 hover:bg-gray-700 transition-colors text-white font-semibold text-sm select-none">
+                    <button
+                        type="button"
+                        onClick={() => setIsLightingOpen(!isLightingOpen)}
+                        className="flex items-center space-x-2 text-left"
+                    >
+                        <Folder className="w-4 h-4 text-cyan-400" />
+                        <span>Lighting & Glow</span>
+                        <motion.div
+                            animate={{ rotate: isLightingOpen ? 0 : -90 }}
+                            transition={{ duration: 0.2 }}
+                            className="ml-1 flex items-center"
+                        >
+                            <ChevronDown className="w-4 h-4 text-gray-400" />
+                        </motion.div>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={resetLighting}
+                        className="px-2 py-0.5 text-xs text-gray-300 hover:text-white bg-gray-800 hover:bg-gray-600 rounded transition-colors flex items-center space-x-1 border border-gray-600/50"
+                        title="Reset all lighting settings to defaults"
+                    >
+                        <RotateCcw className="w-3 h-3" />
+                        <span>Reset Folder</span>
+                    </button>
+                </div>
+
+                <AnimatePresence initial={false}>
+                    {isLightingOpen && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.25, ease: "easeInOut" }}
+                            className="overflow-hidden bg-gray-800/50 border-t border-gray-700"
+                        >
+                            <div className="p-3 flex flex-col space-y-4 max-h-60 overflow-y-auto pr-1">
+                                <LightingControls />
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+
+            {/* Foldable Contour Folder */}
+            <div className="border border-gray-700 rounded-lg overflow-hidden bg-gray-900/40">
+                <div className="flex items-center justify-between p-2.5 bg-gray-700/60 hover:bg-gray-700 transition-colors text-white font-semibold text-sm select-none">
+                    <div className="flex items-center space-x-2.5">
+                        <input
+                            type="checkbox"
+                            checked={isContourEnabled}
+                            onChange={() => toggleContourEnabled()}
+                            title="Enable/Disable Contour Lines"
+                            className="border border-gray-600 bg-gray-900 rounded w-4 h-4 cursor-pointer accent-cyan-500"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setIsContourOpen(!isContourOpen)}
+                            className="flex items-center space-x-2 text-left"
+                        >
+                            <Folder className="w-4 h-4 text-cyan-400" />
+                            <span>Contour Lines</span>
+                            <motion.div
+                                animate={{ rotate: isContourOpen ? 0 : -90 }}
+                                transition={{ duration: 0.2 }}
+                                className="ml-1 flex items-center"
+                            >
+                                <ChevronDown className="w-4 h-4 text-gray-400" />
+                            </motion.div>
+                        </button>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={resetContour}
+                        className="px-2 py-0.5 text-xs text-gray-300 hover:text-white bg-gray-800 hover:bg-gray-600 rounded transition-colors flex items-center space-x-1 border border-gray-600/50"
+                        title="Reset all settings in Contour folder to defaults"
+                    >
+                        <RotateCcw className="w-3 h-3" />
+                        <span>Reset Folder</span>
+                    </button>
+                </div>
+
+                <AnimatePresence initial={false}>
+                    {isContourOpen && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.25, ease: "easeInOut" }}
+                            className="overflow-hidden bg-gray-800/50 border-t border-gray-700"
+                        >
+                            <div className="p-3 flex flex-col space-y-4 max-h-60 overflow-y-auto pr-1">
+                                <ContourControls />
                             </div>
                         </motion.div>
                     )}
