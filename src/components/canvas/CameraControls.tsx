@@ -1,10 +1,10 @@
-import { OrbitControls } from '@react-three/drei';
+// import { OrbitControls } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
-import { useAudioStore } from '../../store/useAudioStore';
+// import { useAudioStore } from '../../store/useAudioStore';
 import { TrackballControls } from '@react-three/drei';
 
 export const CameraControls = () => {
-  const autoRotate = useAudioStore((state) => state.autoRotate);
+  // const autoRotate = useAudioStore((state) => state.autoRotate);
   const gl = useThree((state) => state.gl);
 
   if (!gl || !gl.domElement) return null;

@@ -1,5 +1,5 @@
 import { EnvironmentLights } from './EnvironmentLights';
-import { CyberGrid } from './CyberGrid';
+// import { CyberGrid } from './CyberGrid';
 import { CyberCoreMesh } from './CyberCoreMesh';
 import { CameraControls } from './CameraControls';
 import { Canvas } from '@react-three/fiber'
