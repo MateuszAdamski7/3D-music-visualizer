@@ -1,17 +1,11 @@
 import { EnvironmentLights } from './EnvironmentLights';
-// import { CyberGrid } from './CyberGrid';
 import { CyberCoreMesh } from './CyberCoreMesh';
 import { CameraControls } from './CameraControls';
-import { Canvas } from '@react-three/fiber'
-import { useAudioStore } from '../../store/useAudioStore';
+import { Canvas } from '@react-three/fiber';
+import { useCoreStore } from '../../store/useCoreStore';
 
-interface SceneCanvasProps {
-  getAudioData: () => { bass: number; mid: number; treble: number; rms: number };
-}
-
-export const SceneCanvas = ({ getAudioData: _getAudioData }: SceneCanvasProps) => {
-
-  const wireframe = useAudioStore((state) => state.wireframe);
+export const SceneCanvas = () => {
+  const wireframe = useCoreStore((state) => state.wireframe);
 
   return (
     <div className="canvas-container">
@@ -31,11 +25,8 @@ export const SceneCanvas = ({ getAudioData: _getAudioData }: SceneCanvasProps) =
         {/* Scene Lighting */}
         <EnvironmentLights />
 
-        {/* Floor Horizon Grid */}
-        {/* <CyberGrid /> */}
-
         {/* Central Deforming GLSL CyberCore Mesh */}
-        <CyberCoreMesh wireframe={wireframe}/>
+        <CyberCoreMesh wireframe={wireframe} />
 
         {/* Camera Navigation */}
         <CameraControls />
@@ -43,3 +34,4 @@ export const SceneCanvas = ({ getAudioData: _getAudioData }: SceneCanvasProps) =
     </div>
   );
 };
+

@@ -5,6 +5,7 @@ import { useFrame } from '@react-three/fiber';
 import { useCoreStore } from '../../store/useCoreStore';
 
 export const CyberCoreMesh = ({ wireframe = true }: { wireframe: boolean }) => {
+  const meshRef = useRef<THREE.Mesh>(null!);
   const perlinTimeRef = useRef(0);
   const breathingSpeedRef = useRef(0);
 
@@ -48,9 +49,13 @@ export const CyberCoreMesh = ({ wireframe = true }: { wireframe: boolean }) => {
   }>(null!);
 
   useFrame((_, delta) => {
-    if (materialRef.current) {
-      const state = useCoreStore.getState();
+    const state = useCoreStore.getState();
 
+    if (state.autoRotate && meshRef.current) {
+      meshRef.current.rotation.y += delta * 0.4;
+    }
+
+    if (materialRef.current) {
       materialRef.current.uTime += delta;
 
       // Continuously integrate delta * speed multiplier to prevent phase jumping
@@ -95,11 +100,13 @@ export const CyberCoreMesh = ({ wireframe = true }: { wireframe: boolean }) => {
 
   return (
     <group position={[0, 0, 0]}>
-      <mesh>
-        <icosahedronGeometry args={[icosahedronRadius, icosahedronDetail]} />
+      <mesh ref={meshRef} scale={[icosahedronRadius, icosahedronRadius, icosahedronRadius]}>
+        <icosahedronGeometry args={[1, icosahedronDetail]} />
         <sphereMaterial ref={materialRef} wireframe={wireframe} />
       </mesh>
     </group>
   );
 };
+
+
 

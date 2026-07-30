@@ -1,7 +1,9 @@
-import { useState, memo, useCallback } from "react";
-import { RotateCcw, ChevronDown, Folder } from "lucide-react";
+import { useState, memo, useCallback, useEffect, useRef } from "react";
+import { RotateCcw, SlidersHorizontal, Minimize2, Box, Sparkles, Activity, Sun, Layers, GripVertical } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCoreStore, DEFAULT_CORE_SETTINGS } from "../../store/useCoreStore";
+
+
 
 // --- MEMOIZED ISOLATED CONTROLS FOR MAXIMUM PERFORMANCE ---
 
@@ -11,20 +13,20 @@ const TimeControl = memo(() => {
 
     return (
         <div className="flex flex-col space-y-1">
-            <label className="text-white font-semibold text-sm">Time</label>
+            <label className="text-white font-semibold text-xs text-gray-200">Time Speed</label>
             <div className="flex items-center space-x-2">
                 <input
                     type="range"
                     min={0}
-                    max={10}
-                    step={0.1}
+                    max={3}
+                    step={0.01}
                     value={perlinTime}
                     onChange={(e) => setPerlinTime(Number(e.target.value))}
-                    className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer"
+                    className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer accent-cyan-500"
                 />
                 <input
                     type="number"
-                    step={0.1}
+                    step={0.01}
                     value={perlinTime}
                     onChange={(e) => setPerlinTime(Number(e.target.value))}
                     className="w-16 border border-gray-600 bg-gray-900 text-white text-xs rounded-md px-1 py-1"
@@ -32,7 +34,7 @@ const TimeControl = memo(() => {
                 <button
                     type="button"
                     onClick={() => setPerlinTime(DEFAULT_CORE_SETTINGS.perlinTime)}
-                    title="Reset Time to default (0)"
+                    title="Reset Time to default (1.0)"
                     className="p-1.5 text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600 rounded-md transition-colors"
                 >
                     <RotateCcw className="w-3.5 h-3.5" />
@@ -48,7 +50,7 @@ const AmplitudeControl = memo(() => {
 
     return (
         <div className="flex flex-col space-y-1">
-            <label className="text-white font-semibold text-sm">Amplitude</label>
+            <label className="text-white font-semibold text-xs text-gray-200">Amplitude</label>
             <div className="flex items-center space-x-2">
                 <input
                     type="range"
@@ -57,7 +59,7 @@ const AmplitudeControl = memo(() => {
                     step={0.01}
                     value={amplitude}
                     onChange={(e) => setPerlinAmplitude(Number(e.target.value))}
-                    className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer"
+                    className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer accent-cyan-500"
                 />
                 <input
                     type="number"
@@ -85,7 +87,7 @@ const FrequencyControl = memo(() => {
 
     return (
         <div className="flex flex-col space-y-1">
-            <label className="text-white font-semibold text-sm">Frequency</label>
+            <label className="text-white font-semibold text-xs text-gray-200">Frequency</label>
             <div className="flex items-center space-x-2">
                 <input
                     type="range"
@@ -94,7 +96,7 @@ const FrequencyControl = memo(() => {
                     step={0.01}
                     value={frequency}
                     onChange={(e) => setPerlinFrequency(Number(e.target.value))}
-                    className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer"
+                    className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer accent-cyan-500"
                 />
                 <input
                     type="number"
@@ -129,7 +131,7 @@ const FrequencyVectorControl = memo(() => {
     return (
         <div className="flex flex-col space-y-2 border-t border-gray-700/60 pt-2">
             <div className="flex items-center justify-between">
-                <label className="text-white font-semibold text-sm">
+                <label className="text-white font-semibold text-xs text-gray-200">
                     Frequency Vector (X, Y, Z)
                 </label>
                 <button
@@ -151,7 +153,7 @@ const FrequencyVectorControl = memo(() => {
                         step={0.01}
                         value={frequencyVec[axis]}
                         onChange={(e) => handleVecChange(axis, Number(e.target.value))}
-                        className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer"
+                        className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer accent-cyan-500"
                     />
                     <input
                         type="number"
@@ -180,7 +182,7 @@ const LacunarityControl = memo(() => {
 
     return (
         <div className="flex flex-col space-y-1 border-t border-gray-700/60 pt-2">
-            <label className="text-white font-semibold text-sm">Lacunarity</label>
+            <label className="text-white font-semibold text-xs text-gray-200">Lacunarity</label>
             <div className="flex items-center space-x-2">
                 <input
                     type="range"
@@ -189,7 +191,7 @@ const LacunarityControl = memo(() => {
                     step={0.01}
                     value={lacunarity}
                     onChange={(e) => setPerlinLacunarity(Number(e.target.value))}
-                    className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer"
+                    className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer accent-cyan-500"
                 />
                 <input
                     type="number"
@@ -217,7 +219,7 @@ const PersistenceControl = memo(() => {
 
     return (
         <div className="flex flex-col space-y-1">
-            <label className="text-white font-semibold text-sm">Persistence</label>
+            <label className="text-white font-semibold text-xs text-gray-200">Persistence</label>
             <div className="flex items-center space-x-2">
                 <input
                     type="range"
@@ -226,7 +228,7 @@ const PersistenceControl = memo(() => {
                     step={0.01}
                     value={persistence}
                     onChange={(e) => setPerlinPersistence(Number(e.target.value))}
-                    className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer"
+                    className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer accent-cyan-500"
                 />
                 <input
                     type="number"
@@ -254,7 +256,7 @@ const OctavesControl = memo(() => {
 
     return (
         <div className="flex flex-col space-y-1">
-            <label className="text-white font-semibold text-sm">Octaves</label>
+            <label className="text-white font-semibold text-xs text-gray-200">Octaves</label>
             <div className="flex items-center space-x-2">
                 <input
                     type="range"
@@ -263,7 +265,7 @@ const OctavesControl = memo(() => {
                     step={1}
                     value={octaves}
                     onChange={(e) => setPerlinOctaves(Number(e.target.value))}
-                    className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer"
+                    className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer accent-cyan-500"
                 />
                 <input
                     type="number"
@@ -285,8 +287,6 @@ const OctavesControl = memo(() => {
     );
 });
 
-
-
 const ColorControl = memo(() => {
     const colorLow = useCoreStore((state) => state.perlinColorLow);
     const setPerlinColorLow = useCoreStore((state) => state.setPerlinColorLow);
@@ -294,10 +294,10 @@ const ColorControl = memo(() => {
     const setPerlinColorHigh = useCoreStore((state) => state.setPerlinColorHigh);
 
     return (
-        <div className="flex flex-col space-y-2 border-t border-gray-700/60 pt-2">
-            <label className="text-white font-semibold text-sm">Sphere Colors</label>
+        <div className="flex flex-col space-y-2">
+            <label className="text-white font-semibold text-xs text-gray-200">Sphere Gradient Colors</label>
             <div className="grid grid-cols-2 gap-2">
-                {/* Low Color (Downs / Valleys) */}
+                {/* Low Color (Valleys) */}
                 <div className="flex flex-col space-y-1">
                     <span className="text-xs text-gray-400 font-medium">Valleys (Downs)</span>
                     <div className="flex items-center space-x-1 border border-gray-600 bg-gray-900 rounded-md p-1">
@@ -306,7 +306,7 @@ const ColorControl = memo(() => {
                             value={colorLow}
                             onChange={(e) => setPerlinColorLow(e.target.value)}
                             className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent p-0"
-                            title="Valley Color (Perlin downs)"
+                            title="Valley Color"
                         />
                         <input
                             type="text"
@@ -317,7 +317,7 @@ const ColorControl = memo(() => {
                         <button
                             type="button"
                             onClick={() => setPerlinColorLow(DEFAULT_CORE_SETTINGS.perlinColorLow)}
-                            title="Reset Valley Color (#ff1a40)"
+                            title="Reset Valley Color"
                             className="p-1 text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600 rounded transition-colors"
                         >
                             <RotateCcw className="w-3 h-3" />
@@ -325,7 +325,7 @@ const ColorControl = memo(() => {
                     </div>
                 </div>
 
-                {/* High Color (Tops / Peaks) */}
+                {/* High Color (Peaks) */}
                 <div className="flex flex-col space-y-1">
                     <span className="text-xs text-gray-400 font-medium">Peaks (Tops)</span>
                     <div className="flex items-center space-x-1 border border-gray-600 bg-gray-900 rounded-md p-1">
@@ -334,7 +334,7 @@ const ColorControl = memo(() => {
                             value={colorHigh}
                             onChange={(e) => setPerlinColorHigh(e.target.value)}
                             className="w-6 h-6 rounded cursor-pointer border-0 bg-transparent p-0"
-                            title="Peak Color (Perlin tops)"
+                            title="Peak Color"
                         />
                         <input
                             type="text"
@@ -345,7 +345,7 @@ const ColorControl = memo(() => {
                         <button
                             type="button"
                             onClick={() => setPerlinColorHigh(DEFAULT_CORE_SETTINGS.perlinColorHigh)}
-                            title="Reset Peak Color (#00d9ff)"
+                            title="Reset Peak Color"
                             className="p-1 text-gray-400 hover:text-white bg-gray-700 hover:bg-gray-600 rounded transition-colors"
                         >
                             <RotateCcw className="w-3 h-3" />
@@ -363,7 +363,7 @@ const BreathingSpeedControl = memo(() => {
     
     return (
         <div className="flex flex-col space-y-1">
-            <label className="text-white font-semibold text-sm">Breathing Speed</label>
+            <label className="text-white font-semibold text-xs text-gray-200">Breathing Speed</label>
             <div className="flex items-center space-x-2">
                 <input
                     type="range"
@@ -372,7 +372,7 @@ const BreathingSpeedControl = memo(() => {
                     step={0.01}
                     value={breathingSpeed}
                     onChange={(e) => setBreathingSpeed(Number(e.target.value))}
-                    className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer"
+                    className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer accent-cyan-500"
                 />
                 <input 
                     type="number" 
@@ -400,7 +400,7 @@ const BreathingAmplitudeControl = memo(() => {
     
     return (
         <div className="flex flex-col space-y-1">
-            <label className="text-white font-semibold text-sm">Breathing Amplitude</label>
+            <label className="text-white font-semibold text-xs text-gray-200">Breathing Amplitude</label>
             <div className="flex items-center space-x-2">
                 <input
                     type="range"
@@ -409,7 +409,7 @@ const BreathingAmplitudeControl = memo(() => {
                     step={0.005}
                     value={breathingAmplitude}
                     onChange={(e) => setBreathingAmplitude(Number(e.target.value))}
-                    className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer"
+                    className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer accent-cyan-500"
                 />
                 <input 
                     type="number" 
@@ -473,7 +473,7 @@ const LightingControls = memo(() => {
                         step={0.05}
                         value={keyLightIntensity}
                         onChange={(e) => setKeyLightIntensity(Number(e.target.value))}
-                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer"
+                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer accent-cyan-500"
                     />
                     <input
                         type="number"
@@ -514,7 +514,7 @@ const LightingControls = memo(() => {
                         step={0.05}
                         value={fillLightIntensity}
                         onChange={(e) => setFillLightIntensity(Number(e.target.value))}
-                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer"
+                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer accent-cyan-500"
                     />
                     <input
                         type="number"
@@ -555,7 +555,7 @@ const LightingControls = memo(() => {
                         step={0.05}
                         value={rimIntensity}
                         onChange={(e) => setRimIntensity(Number(e.target.value))}
-                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer"
+                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer accent-cyan-500"
                     />
                     <input
                         type="number"
@@ -574,7 +574,7 @@ const LightingControls = memo(() => {
                         step={0.1}
                         value={rimPower}
                         onChange={(e) => setRimPower(Number(e.target.value))}
-                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer"
+                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer accent-cyan-500"
                     />
                     <input
                         type="number"
@@ -598,7 +598,7 @@ const LightingControls = memo(() => {
                         step={0.05}
                         value={specularIntensity}
                         onChange={(e) => setSpecularIntensity(Number(e.target.value))}
-                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer"
+                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer accent-cyan-500"
                     />
                     <input
                         type="number"
@@ -617,7 +617,7 @@ const LightingControls = memo(() => {
                         step={1}
                         value={shininess}
                         onChange={(e) => setShininess(Number(e.target.value))}
-                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer"
+                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer accent-cyan-500"
                     />
                     <input
                         type="number"
@@ -658,7 +658,7 @@ const LightingControls = memo(() => {
                         step={0.05}
                         value={emissiveIntensity}
                         onChange={(e) => setEmissiveIntensity(Number(e.target.value))}
-                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer"
+                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer accent-cyan-500"
                     />
                     <input
                         type="number"
@@ -677,7 +677,7 @@ const LightingControls = memo(() => {
                         step={0.05}
                         value={valleyEmissiveIntensity}
                         onChange={(e) => setValleyEmissiveIntensity(Number(e.target.value))}
-                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer"
+                        className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer accent-cyan-500"
                     />
                     <input
                         type="number"
@@ -705,7 +705,7 @@ const ContourControls = memo(() => {
     return (
         <div className="flex flex-col space-y-3">
             <div className="flex items-center justify-between border border-gray-600 bg-gray-900 rounded-md p-1">
-                <span className="text-xs text-gray-300 ml-1">Color</span>
+                <span className="text-xs text-gray-300 ml-1">Line Color</span>
                 <div className="flex items-center space-x-1">
                     <input
                         type="color"
@@ -730,7 +730,7 @@ const ContourControls = memo(() => {
                     step={1}
                     value={contourCount}
                     onChange={(e) => setContourCount(Number(e.target.value))}
-                    className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer"
+                    className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer accent-cyan-500"
                 />
                 <input
                     type="number"
@@ -745,11 +745,11 @@ const ContourControls = memo(() => {
                 <input
                     type="range"
                     min={0.01}
-                    max={0.5}
+                    max={5}
                     step={0.01}
                     value={contourWidth}
                     onChange={(e) => setContourWidth(Number(e.target.value))}
-                    className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer"
+                    className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer accent-cyan-500"
                 />
                 <input
                     type="number"
@@ -768,7 +768,7 @@ const ContourControls = memo(() => {
                     step={0.05}
                     value={contourIntensity}
                     onChange={(e) => setContourIntensity(Number(e.target.value))}
-                    className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer"
+                    className="w-24 border border-gray-600 bg-gray-900 text-white rounded-md px-1 py-1 cursor-pointer accent-cyan-500"
                 />
                 <input
                     type="number"
@@ -783,10 +783,35 @@ const ContourControls = memo(() => {
 });
 
 const GeometryControls = memo(() => {
-    const detail = useCoreStore((state) => state.icosahedronDetail);
-    const setDetail = useCoreStore((state) => state.setIcosahedronDetail);
+    const storeDetail = useCoreStore((state) => state.icosahedronDetail);
+    const setStoreDetail = useCoreStore((state) => state.setIcosahedronDetail);
     const radius = useCoreStore((state) => state.icosahedronRadius);
     const setRadius = useCoreStore((state) => state.setIcosahedronRadius);
+
+    const [localDetail, setLocalDetail] = useState(storeDetail);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // Keep local detail in sync if store is reset
+    useEffect(() => {
+        setLocalDetail(storeDetail);
+    }, [storeDetail]);
+
+    const handleDetailSlide = (val: number) => {
+        setLocalDetail(val);
+        if (timerRef.current) {
+            clearTimeout(timerRef.current);
+        }
+        timerRef.current = setTimeout(() => {
+            setStoreDetail(val);
+        }, 50);
+    };
+
+    const handleDetailCommit = (val: number) => {
+        if (timerRef.current) {
+            clearTimeout(timerRef.current);
+        }
+        setStoreDetail(val);
+    };
 
     return (
         <div className="flex flex-col space-y-3">
@@ -798,17 +823,23 @@ const GeometryControls = memo(() => {
                         min={0}
                         max={150}
                         step={1}
-                        value={detail}
-                        onChange={(e) => setDetail(Number(e.target.value))}
-                        className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer"
+                        value={localDetail}
+                        onChange={(e) => handleDetailSlide(Number(e.target.value))}
+                        onPointerUp={(e) => handleDetailCommit(Number((e.target as HTMLInputElement).value))}
+                        onKeyUp={(e) => handleDetailCommit(Number((e.target as HTMLInputElement).value))}
+                        className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer accent-cyan-500"
                     />
                     <input
                         type="number"
                         min={0}
                         max={200}
                         step={1}
-                        value={detail}
-                        onChange={(e) => setDetail(Number(e.target.value))}
+                        value={localDetail}
+                        onChange={(e) => {
+                            const val = Number(e.target.value);
+                            setLocalDetail(val);
+                            handleDetailCommit(val);
+                        }}
                         className="w-16 border border-gray-600 bg-gray-900 text-white text-xs rounded-md px-1 py-1"
                     />
                 </div>
@@ -824,7 +855,7 @@ const GeometryControls = memo(() => {
                         step={0.1}
                         value={radius}
                         onChange={(e) => setRadius(Number(e.target.value))}
-                        className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer"
+                        className="w-32 border border-gray-600 bg-gray-900 text-white rounded-md px-2 py-1 cursor-pointer accent-cyan-500"
                     />
                     <input
                         type="number"
@@ -839,12 +870,14 @@ const GeometryControls = memo(() => {
     );
 });
 
+
+type TabType = 'mesh' | 'perlin' | 'breathing' | 'lighting' | 'contours';
+
 export const CoreSettings = () => {
-    const [isPerlinOpen, setIsPerlinOpen] = useState(true);
-    const [isBreathingOpen, setIsBreathingOpen] = useState(true);
-    const [isLightingOpen, setIsLightingOpen] = useState(true);
-    const [isContourOpen, setIsContourOpen] = useState(true);
-    const [isGeometryOpen, setIsGeometryOpen] = useState(true);
+    const [activeTab, setActiveTab] = useState<TabType>('perlin');
+    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [position, setPosition] = useState({ x: 16, y: 96 }); // top-24 (96px), left-4 (16px)
+    const [menuSize, setMenuSize] = useState({ width: 340, height: 460 });
 
     const isPerlinEnabled = useCoreStore((state) => state.isPerlinEnabled);
     const togglePerlinEnabled = useCoreStore((state) => state.togglePerlinEnabled);
@@ -860,115 +893,182 @@ export const CoreSettings = () => {
     const resetGeometry = useCoreStore((state) => state.resetGeometry);
     const resetAll = useCoreStore((state) => state.resetAll);
 
+    const handleCategoryReset = () => {
+        switch (activeTab) {
+            case 'mesh': resetGeometry(); break;
+            case 'perlin': resetPerlin(); break;
+            case 'breathing': resetBreathing(); break;
+            case 'lighting': resetLighting(); break;
+            case 'contours': resetContour(); break;
+        }
+    };
+
+    const handleMovePointerDown = (e: React.PointerEvent) => {
+        if (e.button !== 0) return;
+        e.preventDefault();
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startPosX = position.x;
+        const startPosY = position.y;
+
+        const onPointerMove = (moveEvent: PointerEvent) => {
+            const newX = Math.max(0, Math.min(window.innerWidth - 100, startPosX + (moveEvent.clientX - startX)));
+            const newY = Math.max(0, Math.min(window.innerHeight - 50, startPosY + (moveEvent.clientY - startY)));
+            setPosition({ x: newX, y: newY });
+        };
+
+        const onPointerUp = () => {
+            window.removeEventListener('pointermove', onPointerMove);
+            window.removeEventListener('pointerup', onPointerUp);
+        };
+
+        window.addEventListener('pointermove', onPointerMove);
+        window.addEventListener('pointerup', onPointerUp);
+    };
+
+    const handleResizePointerDown = (e: React.PointerEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startWidth = menuSize.width;
+        const startHeight = menuSize.height;
+
+        const onPointerMove = (moveEvent: PointerEvent) => {
+            const newWidth = Math.max(280, Math.min(650, startWidth + (moveEvent.clientX - startX)));
+            const newHeight = Math.max(240, Math.min(850, startHeight + (moveEvent.clientY - startY)));
+            setMenuSize({ width: newWidth, height: newHeight });
+        };
+
+        const onPointerUp = () => {
+            window.removeEventListener('pointermove', onPointerMove);
+            window.removeEventListener('pointerup', onPointerUp);
+        };
+
+        window.addEventListener('pointermove', onPointerMove);
+        window.addEventListener('pointerup', onPointerUp);
+    };
+
+    if (isCollapsed) {
+        return (
+            <button
+                type="button"
+                style={{ left: position.x, top: position.y }}
+                onClick={() => setIsCollapsed(false)}
+                onPointerDown={handleMovePointerDown}
+                className="fixed z-[9999] px-3.5 py-2 rounded-xl flex items-center space-x-2 text-cyan-300 border border-cyan-500/30 hover:border-cyan-400 bg-gray-900/90 hover:bg-gray-800/90 backdrop-blur-md shadow-lg shadow-cyan-500/10 cursor-grab active:cursor-grabbing transition-all hover:scale-105 pointer-events-auto touch-none select-none"
+                title="Click to expand, drag to move"
+            >
+                <GripVertical className="w-3.5 h-3.5 text-cyan-400/70" />
+                <SlidersHorizontal className="w-4 h-4 text-cyan-400" />
+                <span className="text-xs font-mono font-semibold tracking-wider">CORE SETTINGS</span>
+            </button>
+        );
+    }
+
+    const tabs: { id: TabType; label: string; icon: React.ReactNode; enabled?: boolean; toggle?: () => void }[] = [
+        { id: 'mesh', label: 'Mesh', icon: <Box className="w-3.5 h-3.5" /> },
+        { id: 'perlin', label: 'Perlin', icon: <Sparkles className="w-3.5 h-3.5" />, enabled: isPerlinEnabled, toggle: togglePerlinEnabled },
+        { id: 'breathing', label: 'Breathing', icon: <Activity className="w-3.5 h-3.5" />, enabled: isBreathing, toggle: toggleBreathing },
+        { id: 'lighting', label: 'Lighting', icon: <Sun className="w-3.5 h-3.5" /> },
+        { id: 'contours', label: 'Contours', icon: <Layers className="w-3.5 h-3.5" />, enabled: isContourEnabled, toggle: toggleContourEnabled },
+    ];
+
     return (
-        <div className="fixed top-30 left-0 z-50 m-4 bg-gray-800 p-4 rounded-lg flex flex-col space-y-4 max-h-[80vh] overflow-y-auto shadow-xl border border-gray-700 w-80">
-            <div className="flex items-center justify-between border-b border-gray-700 pb-2">
-                <h3 className="text-white font-bold text-base">Core Settings</h3>
-                <button
-                    type="button"
-                    onClick={resetAll}
-                    className="px-2 py-1 text-xs bg-red-900/40 hover:bg-red-800/60 text-red-200 border border-red-700/50 rounded flex items-center space-x-1 transition-colors"
-                    title="Reset all settings to default"
+        <div
+            style={{ left: position.x, top: position.y, width: menuSize.width, height: menuSize.height }}
+            className="fixed z-[9999] bg-gray-900/95 backdrop-blur-md p-3.5 rounded-2xl flex flex-col space-y-3 shadow-2xl border border-cyan-500/30 pointer-events-auto select-none overflow-hidden"
+        >
+            {/* Header Controls */}
+            <div className="flex items-center justify-between border-b border-gray-800 pb-2.5 shrink-0">
+                <div
+                    onPointerDown={handleMovePointerDown}
+                    className="flex items-center space-x-1.5 cursor-grab active:cursor-grabbing text-gray-300 hover:text-white group touch-none select-none py-0.5 pr-2"
+                    title="Click and drag to move menu"
                 >
-                    <RotateCcw className="w-3 h-3" />
-                    <span>Reset All</span>
-                </button>
-            </div>
-
-            {/* Foldable Geometry Folder */}
-            <div className="border border-gray-700 rounded-lg overflow-hidden bg-gray-900/40">
-                <div className="flex items-center justify-between p-2.5 bg-gray-700/60 hover:bg-gray-700 transition-colors text-white font-semibold text-sm select-none">
-                    <button
-                        type="button"
-                        onClick={() => setIsGeometryOpen(!isGeometryOpen)}
-                        className="flex items-center space-x-2 text-left"
-                    >
-                        <Folder className="w-4 h-4 text-cyan-400" />
-                        <span>Geometry & Mesh</span>
-                        <motion.div
-                            animate={{ rotate: isGeometryOpen ? 0 : -90 }}
-                            transition={{ duration: 0.2 }}
-                            className="ml-1 flex items-center"
-                        >
-                            <ChevronDown className="w-4 h-4 text-gray-400" />
-                        </motion.div>
-                    </button>
-                    <button
-                        type="button"
-                        onClick={resetGeometry}
-                        className="px-2 py-0.5 text-xs text-gray-300 hover:text-white bg-gray-800 hover:bg-gray-600 rounded transition-colors flex items-center space-x-1 border border-gray-600/50"
-                        title="Reset all geometry settings to defaults"
-                    >
-                        <RotateCcw className="w-3 h-3" />
-                        <span>Reset Folder</span>
-                    </button>
+                    <GripVertical className="w-4 h-4 text-gray-400 group-hover:text-cyan-400 transition-colors" />
+                    <SlidersHorizontal className="w-4 h-4 text-cyan-400" />
+                    <h3 className="text-white font-bold text-sm tracking-wide">Core Settings</h3>
                 </div>
 
-                <AnimatePresence initial={false}>
-                    {isGeometryOpen && (
-                        <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.25, ease: "easeInOut" }}
-                            className="overflow-hidden bg-gray-800/50 border-t border-gray-700"
-                        >
-                            <div className="p-3 flex flex-col space-y-4 max-h-60 overflow-y-auto pr-1">
-                                <GeometryControls />
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+
+                <div className="flex items-center space-x-1.5">
+                    <button
+                        type="button"
+                        onClick={handleCategoryReset}
+                        className="px-2 py-1 text-[11px] font-mono text-gray-300 hover:text-white bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg transition-colors flex items-center space-x-1"
+                        title="Reset current active tab"
+                    >
+                        <RotateCcw className="w-3 h-3" />
+                        <span>Tab</span>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={resetAll}
+                        className="px-2 py-1 text-[11px] font-mono bg-red-900/40 hover:bg-red-800/60 text-red-200 border border-red-700/50 rounded-lg flex items-center space-x-1 transition-colors"
+                        title="Reset all settings"
+                    >
+                        <span>Reset All</span>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setIsCollapsed(true)}
+                        className="p-1 text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg transition-colors"
+                        title="Minimize Menu"
+                    >
+                        <Minimize2 className="w-3.5 h-3.5" />
+                    </button>
+                </div>
             </div>
 
-            {/* Foldable Perlin Folder */}
-            <div className="border border-gray-700 rounded-lg overflow-hidden bg-gray-900/40">
-                <div className="flex items-center justify-between p-2.5 bg-gray-700/60 hover:bg-gray-700 transition-colors text-white font-semibold text-sm select-none">
-                    <div className="flex items-center space-x-2.5">
-                        <input
-                            type="checkbox"
-                            checked={isPerlinEnabled}
-                            onChange={() => togglePerlinEnabled()}
-                            title="Enable/Disable Perlin Noise"
-                            className="border border-gray-600 bg-gray-900 rounded w-4 h-4 cursor-pointer accent-cyan-500"
-                        />
+            {/* Category Navigation Tabs */}
+            <div className="flex items-center space-x-1 bg-gray-950/60 p-1 rounded-xl border border-gray-800/80 overflow-x-auto scrollbar-none shrink-0">
+                {tabs.map((tab) => {
+                    const isActive = activeTab === tab.id;
+                    return (
                         <button
+                            key={tab.id}
                             type="button"
-                            onClick={() => setIsPerlinOpen(!isPerlinOpen)}
-                            className="flex items-center space-x-2 text-left"
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer whitespace-nowrap ${
+                                isActive
+                                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40 shadow-sm shadow-cyan-500/20'
+                                    : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800/50'
+                            }`}
                         >
-                            <Folder className="w-4 h-4 text-cyan-400" />
-                            <span>Perlin</span>
-                            <motion.div
-                                animate={{ rotate: isPerlinOpen ? 0 : -90 }}
-                                transition={{ duration: 0.2 }}
-                                className="ml-1 flex items-center"
-                            >
-                                <ChevronDown className="w-4 h-4 text-gray-400" />
-                            </motion.div>
+                            {tab.icon}
+                            <span>{tab.label}</span>
+                            {tab.toggle !== undefined && (
+                                <span
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        tab.toggle?.();
+                                    }}
+                                    className={`w-2 h-2 rounded-full cursor-pointer transition-colors ${
+                                        tab.enabled ? 'bg-cyan-400 shadow-sm shadow-cyan-400' : 'bg-gray-600'
+                                    }`}
+                                    title={`Toggle ${tab.label}`}
+                                />
+                            )}
                         </button>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={resetPerlin}
-                        className="px-2 py-0.5 text-xs text-gray-300 hover:text-white bg-gray-800 hover:bg-gray-600 rounded transition-colors flex items-center space-x-1 border border-gray-600/50"
-                        title="Reset all settings in Perlin folder to defaults"
-                    >
-                        <RotateCcw className="w-3 h-3" />
-                        <span>Reset Folder</span>
-                    </button>
-                </div>
+                    );
+                })}
+            </div>
 
-                <AnimatePresence initial={false}>
-                    {isPerlinOpen && (
-                        <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.25, ease: "easeInOut" }}
-                            className="overflow-hidden bg-gray-800/50 border-t border-gray-700"
-                        >
-                            <div className="p-3 flex flex-col space-y-4 max-h-60 overflow-y-auto pr-1">
+            {/* Tab Content Panel (Dynamically expands with vertical resize) */}
+            <div className="flex-1 min-h-0 p-3 bg-gray-950/40 rounded-xl border border-gray-800/60 overflow-y-auto pr-1.5 scrollbar-thin scrollbar-thumb-gray-700">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={activeTab}
+                        initial={{ opacity: 0, x: 5 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -5 }}
+                        transition={{ duration: 0.15 }}
+                    >
+                        {activeTab === 'mesh' && <GeometryControls />}
+
+                        {activeTab === 'perlin' && (
+                            <div className="flex flex-col space-y-4">
                                 <ColorControl />
                                 <TimeControl />
                                 <AmplitudeControl />
@@ -978,166 +1078,31 @@ export const CoreSettings = () => {
                                 <PersistenceControl />
                                 <OctavesControl />
                             </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
+                        )}
 
-            {/* Foldable Breathing Folder */}
-            <div className="border border-gray-700 rounded-lg overflow-hidden bg-gray-900/40">
-                <div className="flex items-center justify-between p-2.5 bg-gray-700/60 hover:bg-gray-700 transition-colors text-white font-semibold text-sm select-none">
-                    <div className="flex items-center space-x-2.5">
-                        <input
-                            type="checkbox"
-                            checked={isBreathing}
-                            onChange={() => toggleBreathing()}
-                            title="Enable/Disable Breathing"
-                            className="border border-gray-600 bg-gray-900 rounded w-4 h-4 cursor-pointer accent-cyan-500"
-                        />
-                        <button
-                            type="button"
-                            onClick={() => setIsBreathingOpen(!isBreathingOpen)}
-                            className="flex items-center space-x-2 text-left"
-                        >
-                            <Folder className="w-4 h-4 text-cyan-400" />
-                            <span>Breathing</span>
-                            <motion.div
-                                animate={{ rotate: isBreathingOpen ? 0 : -90 }}
-                                transition={{ duration: 0.2 }}
-                                className="ml-1 flex items-center"
-                            >
-                                <ChevronDown className="w-4 h-4 text-gray-400" />
-                            </motion.div>
-                        </button>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={resetBreathing}
-                        className="px-2 py-0.5 text-xs text-gray-300 hover:text-white bg-gray-800 hover:bg-gray-600 rounded transition-colors flex items-center space-x-1 border border-gray-600/50"
-                        title="Reset all settings in Breathing folder to defaults"
-                    >
-                        <RotateCcw className="w-3 h-3" />
-                        <span>Reset Folder</span>
-                    </button>
-                </div>
-
-                <AnimatePresence initial={false}>
-                    {isBreathingOpen && (
-                        <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.25, ease: "easeInOut" }}
-                            className="overflow-hidden bg-gray-800/50 border-t border-gray-700"
-                        >
-                            <div className="p-3 flex flex-col space-y-4 max-h-60 overflow-y-auto pr-1">
+                        {activeTab === 'breathing' && (
+                            <div className="flex flex-col space-y-4">
                                 <BreathingSpeedControl />
                                 <BreathingAmplitudeControl />
                             </div>
-                        </motion.div>
-                    )}
+                        )}
+
+                        {activeTab === 'lighting' && <LightingControls />}
+
+                        {activeTab === 'contours' && <ContourControls />}
+                    </motion.div>
                 </AnimatePresence>
             </div>
 
-            {/* Foldable Lighting Folder */}
-            <div className="border border-gray-700 rounded-lg overflow-hidden bg-gray-900/40">
-                <div className="flex items-center justify-between p-2.5 bg-gray-700/60 hover:bg-gray-700 transition-colors text-white font-semibold text-sm select-none">
-                    <button
-                        type="button"
-                        onClick={() => setIsLightingOpen(!isLightingOpen)}
-                        className="flex items-center space-x-2 text-left"
-                    >
-                        <Folder className="w-4 h-4 text-cyan-400" />
-                        <span>Lighting & Glow</span>
-                        <motion.div
-                            animate={{ rotate: isLightingOpen ? 0 : -90 }}
-                            transition={{ duration: 0.2 }}
-                            className="ml-1 flex items-center"
-                        >
-                            <ChevronDown className="w-4 h-4 text-gray-400" />
-                        </motion.div>
-                    </button>
-                    <button
-                        type="button"
-                        onClick={resetLighting}
-                        className="px-2 py-0.5 text-xs text-gray-300 hover:text-white bg-gray-800 hover:bg-gray-600 rounded transition-colors flex items-center space-x-1 border border-gray-600/50"
-                        title="Reset all lighting settings to defaults"
-                    >
-                        <RotateCcw className="w-3 h-3" />
-                        <span>Reset Folder</span>
-                    </button>
-                </div>
-
-                <AnimatePresence initial={false}>
-                    {isLightingOpen && (
-                        <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.25, ease: "easeInOut" }}
-                            className="overflow-hidden bg-gray-800/50 border-t border-gray-700"
-                        >
-                            <div className="p-3 flex flex-col space-y-4 max-h-60 overflow-y-auto pr-1">
-                                <LightingControls />
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
-
-            {/* Foldable Contour Folder */}
-            <div className="border border-gray-700 rounded-lg overflow-hidden bg-gray-900/40">
-                <div className="flex items-center justify-between p-2.5 bg-gray-700/60 hover:bg-gray-700 transition-colors text-white font-semibold text-sm select-none">
-                    <div className="flex items-center space-x-2.5">
-                        <input
-                            type="checkbox"
-                            checked={isContourEnabled}
-                            onChange={() => toggleContourEnabled()}
-                            title="Enable/Disable Contour Lines"
-                            className="border border-gray-600 bg-gray-900 rounded w-4 h-4 cursor-pointer accent-cyan-500"
-                        />
-                        <button
-                            type="button"
-                            onClick={() => setIsContourOpen(!isContourOpen)}
-                            className="flex items-center space-x-2 text-left"
-                        >
-                            <Folder className="w-4 h-4 text-cyan-400" />
-                            <span>Contour Lines</span>
-                            <motion.div
-                                animate={{ rotate: isContourOpen ? 0 : -90 }}
-                                transition={{ duration: 0.2 }}
-                                className="ml-1 flex items-center"
-                            >
-                                <ChevronDown className="w-4 h-4 text-gray-400" />
-                            </motion.div>
-                        </button>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={resetContour}
-                        className="px-2 py-0.5 text-xs text-gray-300 hover:text-white bg-gray-800 hover:bg-gray-600 rounded transition-colors flex items-center space-x-1 border border-gray-600/50"
-                        title="Reset all settings in Contour folder to defaults"
-                    >
-                        <RotateCcw className="w-3 h-3" />
-                        <span>Reset Folder</span>
-                    </button>
-                </div>
-
-                <AnimatePresence initial={false}>
-                    {isContourOpen && (
-                        <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.25, ease: "easeInOut" }}
-                            className="overflow-hidden bg-gray-800/50 border-t border-gray-700"
-                        >
-                            <div className="p-3 flex flex-col space-y-4 max-h-60 overflow-y-auto pr-1">
-                                <ContourControls />
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+            {/* Bottom-Right Corner Resize Grip Handle */}
+            <div
+                onPointerDown={handleResizePointerDown}
+                className="absolute bottom-1 right-1 w-4 h-4 cursor-se-resize flex items-center justify-center text-gray-500 hover:text-cyan-400 touch-none select-none z-10"
+                title="Drag corner to resize menu"
+            >
+                <svg className="w-2.5 h-2.5 fill-current" viewBox="0 0 16 16">
+                    <path d="M14 14H12V12H14V14ZM14 10H12V8H14V10ZM10 14H8V12H10V14ZM14 6H12V4H14V6ZM10 10H8V8H10V10ZM6 14H4V12H6V14Z" />
+                </svg>
             </div>
         </div>
     );

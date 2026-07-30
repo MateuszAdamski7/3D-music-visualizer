@@ -30,15 +30,19 @@ export const DEFAULT_CORE_SETTINGS = {
     valleyEmissiveIntensity: 0.5,
 
     // Contour Defaults
-    isContourEnabled: true,
+    isContourEnabled: false,
     contourColor: '#ffffff',
-    contourCount: 12.0,
-    contourWidth: 0.15,
-    contourIntensity: 1.0,
+    contourCount: 1.0,
+    contourWidth: 0.01,
+    contourIntensity: 0.25,
 
     // Geometry Defaults
-    icosahedronRadius: 5,
+    icosahedronRadius: 3,
     icosahedronDetail: 30,
+
+    // Scene View Defaults
+    autoRotate: false,
+    wireframe: false,
 };
 
 export interface CoreState {
@@ -118,6 +122,14 @@ export interface CoreState {
     setIcosahedronRadius: (radius: number) => void;
     setIcosahedronDetail: (detail: number) => void;
 
+    // Scene View Settings
+    autoRotate: boolean;
+    wireframe: boolean;
+    toggleAutoRotate: () => void;
+    toggleWireframe: () => void;
+    setAutoRotate: (autoRotate: boolean) => void;
+    setWireframe: (wireframe: boolean) => void;
+
     resetPerlin: () => void;
     resetBreathing: () => void;
     resetLighting: () => void;
@@ -166,6 +178,11 @@ export const useCoreStore = create<CoreState>((set) => ({
 
     setIcosahedronRadius: (radius) => set({ icosahedronRadius: radius }),
     setIcosahedronDetail: (detail) => set({ icosahedronDetail: detail }),
+
+    toggleAutoRotate: () => set((state) => ({ autoRotate: !state.autoRotate })),
+    toggleWireframe: () => set((state) => ({ wireframe: !state.wireframe })),
+    setAutoRotate: (autoRotate) => set({ autoRotate }),
+    setWireframe: (wireframe) => set({ wireframe }),
 
     resetPerlin: () => set({
         perlinTime: DEFAULT_CORE_SETTINGS.perlinTime,
