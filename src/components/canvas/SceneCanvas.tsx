@@ -1,6 +1,7 @@
 import { EnvironmentLights } from './EnvironmentLights';
 import { CyberCoreMesh } from './CyberCoreMesh';
 import { CameraControls } from './CameraControls';
+import { CyberGrid } from './CyberGrid';
 import { Canvas } from '@react-three/fiber';
 import { useCoreStore } from '../../store/useCoreStore';
 
@@ -18,9 +19,12 @@ export const SceneCanvas = () => {
           alpha: false,
         }}
       >
-        {/* Background & Atmospheric Fog */}
+        {/* Background Color & Extended Fog */}
         <color attach="background" args={['#030014']} />
-        <fog attach="fog" args={['#030014', 12, 40]} />
+        <fog attach="fog" args={['#030014', 35, 250]} />
+
+        {/* Camera-Locked Background Grid Wall */}
+        <CyberGrid />
 
         {/* Scene Lighting */}
         <EnvironmentLights />
@@ -34,4 +38,3 @@ export const SceneCanvas = () => {
     </div>
   );
 };
-

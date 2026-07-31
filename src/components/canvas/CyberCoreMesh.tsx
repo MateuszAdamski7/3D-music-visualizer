@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import * as THREE from 'three';
-import '../../shaders/sphereShader';
+import '../../shaders/sphere/sphereShader';
 import { useFrame } from '@react-three/fiber';
 import { useCoreStore } from '../../store/useCoreStore';
 

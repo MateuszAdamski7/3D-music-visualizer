@@ -43,6 +43,8 @@ export const DEFAULT_CORE_SETTINGS = {
     // Scene View Defaults
     autoRotate: false,
     wireframe: true,
+    showGrid: true,
+    showStars: true,
 };
 
 export interface CoreState {
@@ -125,10 +127,21 @@ export interface CoreState {
     // Scene View Settings
     autoRotate: boolean;
     wireframe: boolean;
+    showGrid: boolean;
+    showStars: boolean;
     toggleAutoRotate: () => void;
     toggleWireframe: () => void;
+    toggleShowGrid: () => void;
+    toggleShowStars: () => void;
     setAutoRotate: (autoRotate: boolean) => void;
     setWireframe: (wireframe: boolean) => void;
+    setShowGrid: (showGrid: boolean) => void;
+    setShowStars: (showStars: boolean) => void;
+
+    // Presets
+    activePresetId: string | null;
+    setActivePresetId: (id: string | null) => void;
+    applyPresetSettings: (settings: Partial<CoreState>, presetId?: string) => void;
 
     resetPerlin: () => void;
     resetBreathing: () => void;
@@ -181,8 +194,19 @@ export const useCoreStore = create<CoreState>((set) => ({
 
     toggleAutoRotate: () => set((state) => ({ autoRotate: !state.autoRotate })),
     toggleWireframe: () => set((state) => ({ wireframe: !state.wireframe })),
+    toggleShowGrid: () => set((state) => ({ showGrid: !state.showGrid })),
+    toggleShowStars: () => set((state) => ({ showStars: !state.showStars })),
     setAutoRotate: (autoRotate) => set({ autoRotate }),
     setWireframe: (wireframe) => set({ wireframe }),
+    setShowGrid: (showGrid) => set({ showGrid }),
+    setShowStars: (showStars) => set({ showStars }),
+
+    activePresetId: 'cyber-neon',
+    setActivePresetId: (id) => set({ activePresetId: id }),
+    applyPresetSettings: (settings, presetId) => set((state) => ({
+        ...settings,
+        activePresetId: presetId !== undefined ? presetId : state.activePresetId,
+    })),
 
     resetPerlin: () => set({
         perlinTime: DEFAULT_CORE_SETTINGS.perlinTime,

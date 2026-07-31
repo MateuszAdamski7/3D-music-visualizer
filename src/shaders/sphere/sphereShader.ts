@@ -96,11 +96,3 @@ declare module '@react-three/fiber' {
     sphereMaterial: ThreeElements['shaderMaterial'] & SphereMaterialType;
   }
 }
-
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      sphereMaterial: SphereMaterialType;
-    }
-  }
-}
