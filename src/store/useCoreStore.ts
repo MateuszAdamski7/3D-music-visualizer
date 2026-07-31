@@ -42,7 +42,7 @@ export const DEFAULT_CORE_SETTINGS = {
 
     // Scene View Defaults
     autoRotate: false,
-    wireframe: false,
+    wireframe: true,
 };
 
 export interface CoreState {
