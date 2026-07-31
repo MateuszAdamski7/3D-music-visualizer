@@ -4,7 +4,7 @@ import { CoreSettings } from './components/ui/CoreSettings';
 
 export function App() {
   return (
-    <main className="relative w-screen h-screen overflow-hidden bg-[#030014]">
+    <main className="relative w-full h-[100dvh] overflow-hidden bg-[#030014]">
       {/* 3D R3F Canvas background layer */}
       <SceneCanvas />
 

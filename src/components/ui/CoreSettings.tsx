@@ -875,9 +875,22 @@ type TabType = 'mesh' | 'perlin' | 'breathing' | 'lighting' | 'contours';
 
 export const CoreSettings = () => {
     const [activeTab, setActiveTab] = useState<TabType>('perlin');
-    const [isCollapsed, setIsCollapsed] = useState(false);
-    const [position, setPosition] = useState({ x: 16, y: 96 }); // top-24 (96px), left-4 (16px)
-    const [menuSize, setMenuSize] = useState({ width: 340, height: 460 });
+    const [isCollapsed, setIsCollapsed] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640);
+    const [position, setPosition] = useState(() => {
+        if (typeof window !== 'undefined' && window.innerWidth < 640) {
+            return { x: 12, y: 70 };
+        }
+        return { x: 16, y: 96 };
+    });
+    const [menuSize, setMenuSize] = useState(() => {
+        if (typeof window !== 'undefined' && window.innerWidth < 640) {
+            return {
+                width: Math.min(320, window.innerWidth - 24),
+                height: Math.min(380, window.innerHeight - 140),
+            };
+        }
+        return { width: 340, height: 460 };
+    });
 
     const isPerlinEnabled = useCoreStore((state) => state.isPerlinEnabled);
     const togglePerlinEnabled = useCoreStore((state) => state.togglePerlinEnabled);
