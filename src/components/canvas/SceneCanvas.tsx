@@ -23,7 +23,7 @@ export const SceneCanvas = () => {
         <color attach="background" args={['#030014']} />
         <fog attach="fog" args={['#030014', 35, 250]} />
 
-        {/* Camera-Locked Background Grid Wall */}
+        {/* Stationary Background Grid Wall */}
         <CyberGrid />
 
         {/* Scene Lighting */}
