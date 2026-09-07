@@ -1,113 +1,112 @@
-import { useRef, useMemo } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useRef } from 'react';
 import * as THREE from 'three';
-import { useAudioStore } from '../../store/useAudioStore';
-import '../../shaders/audioSphereShader';
+import '../../shaders/sphere/sphereShader';
+import { useFrame } from '@react-three/fiber';
+import { useCoreStore } from '../../store/useCoreStore';
 
-interface CyberCoreMeshProps {
-  getAudioData: () => { bass: number; mid: number; treble: number; rms: number };
-}
+export const CyberCoreMesh = ({ wireframe = true }: { wireframe: boolean }) => {
+  const meshRef = useRef<THREE.Mesh>(null!);
+  const perlinTimeRef = useRef(0);
+  const breathingSpeedRef = useRef(0);
 
-export const CyberCoreMesh = ({ getAudioData }: CyberCoreMeshProps) => {
-  const sphereMeshRef = useRef<THREE.Mesh>(null!);
+  const icosahedronRadius = useCoreStore((state) => state.icosahedronRadius);
+  const icosahedronDetail = useCoreStore((state) => state.icosahedronDetail);
+
   const materialRef = useRef<THREE.ShaderMaterial & {
     uTime: number;
-    uBass: number;
-    uMid: number;
-    uTreble: number;
-    uColorBase: THREE.Color;
-    uColorBass: THREE.Color;
-    uColorMid: THREE.Color;
-    uColorTreble: THREE.Color;
+    uPerlinTime: number;
+    uIsPerlinEnabled: boolean;
+    uPerlinAmplitude: number;
+    uIsBreathing: boolean;
+    uBreathingSpeed: number;
+    uBreathingAmplitude: number;
+    uPerlinFrequency: number;
+    uPerlinFrequencyVec: THREE.Vector3;
+
+    uPerlinLacunarity: number;
+    uPerlinPersistence: number;
+    uPerlinOctaves: number;
+    uColorLow: THREE.Color;
+    uColorHigh: THREE.Color;
+
+    uKeyLightIntensity: number;
+    uFillLightColor: THREE.Color;
+    uFillLightIntensity: number;
+    uRimColor: THREE.Color;
+    uRimPower: number;
+    uRimIntensity: number;
+    uSpecularIntensity: number;
+    uShininess: number;
+    uEmissiveColor: THREE.Color;
+    uEmissiveIntensity: number;
+    uValleyEmissiveIntensity: number;
+
+    uIsContourEnabled: boolean;
+    uContourColor: THREE.Color;
+    uContourCount: number;
+    uContourWidth: number;
+    uContourIntensity: number;
   }>(null!);
-  const pointLightRef = useRef<THREE.PointLight>(null!);
-
-  const theme = useAudioStore((state) => state.theme);
-  const wireframe = useAudioStore((state) => state.wireframe);
-
-  const themeColors = useMemo(() => {
-    switch (theme) {
-      case 'synthwave':
-        return {
-          base: new THREE.Color('#240038'),
-          bass: new THREE.Color('#ff00aa'),   // Hot Pink
-          mid: new THREE.Color('#ff8a00'),    // Sunset Orange
-          treble: new THREE.Color('#00f0ff'), // Electric Cyan
-          light: '#ff00aa',
-        };
-      case 'matrix':
-        return {
-          base: new THREE.Color('#011a08'),
-          bass: new THREE.Color('#00ff66'),   // Matrix Green
-          mid: new THREE.Color('#00aa44'),    // Darker Green
-          treble: new THREE.Color('#88ffaa'), // Mint Glow
-          light: '#00ff66',
-        };
-      case 'cyber':
-      default:
-        return {
-          base: new THREE.Color('#080621'),
-          bass: new THREE.Color('#ff007f'),   // Magenta
-          mid: new THREE.Color('#7000ff'),    // Electric Violet
-          treble: new THREE.Color('#00f0ff'), // Cyber Cyan
-          light: '#00f0ff',
-        };
-    }
-  }, [theme]);
 
   useFrame((_, delta) => {
-    const audio = getAudioData();
+    const state = useCoreStore.getState();
 
-    // Clamp audio metrics for subtle, controlled vertex displacement
-    const safeBass = Math.min(1.0, Math.max(0, audio.bass || 0));
-    const safeMid = Math.min(1.0, Math.max(0, audio.mid || 0));
-    const safeTreble = Math.min(1.0, Math.max(0, audio.treble || 0));
+    if (state.autoRotate && meshRef.current) {
+      meshRef.current.rotation.y += delta * 0.4;
+    }
 
-    // 1. Update GLSL Shader Uniforms on GPU
     if (materialRef.current) {
-      materialRef.current.uTime += delta * (0.6 + safeBass * 0.4);
-      materialRef.current.uBass = safeBass;
-      materialRef.current.uMid = safeMid;
-      materialRef.current.uTreble = safeTreble;
-      materialRef.current.uColorBase = themeColors.base;
-      materialRef.current.uColorBass = themeColors.bass;
-      materialRef.current.uColorMid = themeColors.mid;
-      materialRef.current.uColorTreble = themeColors.treble;
-    }
+      materialRef.current.uTime += delta;
 
-    // 2. Smooth, controlled sphere rotation
-    if (sphereMeshRef.current) {
-      sphereMeshRef.current.rotation.y += delta * (0.2 + safeBass * 0.2);
-      sphereMeshRef.current.rotation.x += delta * (0.1 + safeMid * 0.1);
+      // Continuously integrate delta * speed multiplier to prevent phase jumping
+      perlinTimeRef.current += delta * state.perlinTime;
+      materialRef.current.uPerlinTime = perlinTimeRef.current;
 
-      const targetScale = 1.0 + safeBass * 0.12;
-      sphereMeshRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
-    }
+      breathingSpeedRef.current += delta * 5.0 * state.breathingSpeed;
+      materialRef.current.uBreathingSpeed = breathingSpeedRef.current;
 
-    // 3. Sub-surface point light intensity
-    if (pointLightRef.current) {
-      pointLightRef.current.intensity = 2.0 + safeBass * 4.0;
+      materialRef.current.uIsPerlinEnabled = state.isPerlinEnabled;
+      materialRef.current.uPerlinAmplitude = state.perlinAmplitude;
+      materialRef.current.uIsBreathing = state.isBreathing;
+      materialRef.current.uBreathingAmplitude = state.breathingAmplitude;
+      materialRef.current.uPerlinFrequency = state.perlinFrequency;
+      materialRef.current.uPerlinFrequencyVec = state.perlinFrequencyVec;
+      materialRef.current.uPerlinLacunarity = state.perlinLacunarity;
+      materialRef.current.uPerlinPersistence = state.perlinPersistence;
+      materialRef.current.uPerlinOctaves = Math.round(state.perlinOctaves);
+
+      materialRef.current.uColorLow.set(state.perlinColorLow);
+      materialRef.current.uColorHigh.set(state.perlinColorHigh);
+
+      materialRef.current.uKeyLightIntensity = state.keyLightIntensity;
+      materialRef.current.uFillLightColor.set(state.fillLightColor);
+      materialRef.current.uFillLightIntensity = state.fillLightIntensity;
+      materialRef.current.uRimColor.set(state.rimColor);
+      materialRef.current.uRimPower = state.rimPower;
+      materialRef.current.uRimIntensity = state.rimIntensity;
+      materialRef.current.uSpecularIntensity = state.specularIntensity;
+      materialRef.current.uShininess = state.shininess;
+      materialRef.current.uEmissiveColor.set(state.emissiveColor);
+      materialRef.current.uEmissiveIntensity = state.emissiveIntensity;
+      materialRef.current.uValleyEmissiveIntensity = state.valleyEmissiveIntensity;
+
+      materialRef.current.uIsContourEnabled = state.isContourEnabled;
+      materialRef.current.uContourColor.set(state.contourColor);
+      materialRef.current.uContourCount = state.contourCount;
+      materialRef.current.uContourWidth = state.contourWidth;
+      materialRef.current.uContourIntensity = state.contourIntensity;
     }
   });
 
   return (
     <group position={[0, 0, 0]}>
-      {/* Sub-surface Glowing Light inside the sphere */}
-      <pointLight ref={pointLightRef} color={themeColors.light} distance={12} decay={2} />
-
-      {/* SphereGeometry(radius 1.5, 256x256 segments) -> 65,536 vertices for ultra-high-definition smooth peak rendering */}
-      <mesh ref={sphereMeshRef}>
-        <sphereGeometry args={[1.5, 256, 256]} />
-        <audioSphereMaterial
-          ref={materialRef}
-          wireframe={wireframe}
-          uFresnelPower={2.5}
-          uColorBase={themeColors.base}
-          uColorBass={themeColors.bass}
-          uColorMid={themeColors.mid}
-          uColorTreble={themeColors.treble}
-        />
+      <mesh ref={meshRef} scale={[icosahedronRadius, icosahedronRadius, icosahedronRadius]}>
+        <icosahedronGeometry args={[1, icosahedronDetail]} />
+        <sphereMaterial ref={materialRef} wireframe={wireframe} />
       </mesh>
     </group>
   );
 };
+
+
+

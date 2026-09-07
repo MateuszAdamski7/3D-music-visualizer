@@ -1,30 +1,29 @@
-import { useMemo } from 'react';
-import { useAudioStore } from '../../store/useAudioStore';
+import { useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
+import { useCoreStore } from '../../store/useCoreStore';
+import * as THREE from 'three';
+import '../../shaders/grid/gridShader';
 
 export const CyberGrid = () => {
-  const theme = useAudioStore((state) => state.theme);
+  const showGrid = useCoreStore((state) => state.showGrid);
+  const groupRef = useRef<THREE.Group>(null!);
 
-  const gridColor = useMemo(() => {
-    switch (theme) {
-      case 'synthwave':
-        return '#ff00aa';
-      case 'matrix':
-        return '#00ff66';
-      case 'cyber':
-      default:
-        return '#00f0ff';
+  useFrame(({ camera }) => {
+    if (groupRef.current) {
+      // Sync grid position & rotation to camera view, 20 units behind
+      groupRef.current.position.copy(camera.position);
+      groupRef.current.quaternion.copy(camera.quaternion);
+      groupRef.current.translateZ(-20);
     }
-  }, [theme]);
+  });
+
+  if (!showGrid) return null;
 
   return (
-    <group position={[0, -3, 0]}>
-      {/* 3D Floor Grid aligned horizontally on XZ plane */}
-      <gridHelper args={[60, 60, gridColor, '#7000ff']} />
-
-      {/* Subtle floor reflection plane */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}>
+    <group ref={groupRef}>
+      <mesh>
         <planeGeometry args={[100, 100]} />
-        <meshBasicMaterial color="#030014" opacity={0.8} transparent />
+        <cyberGridMaterial transparent depthWrite={false} />
       </mesh>
     </group>
   );

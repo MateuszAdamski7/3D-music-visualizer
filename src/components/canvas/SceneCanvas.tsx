@@ -1,14 +1,13 @@
-import { Canvas } from '@react-three/fiber';
 import { EnvironmentLights } from './EnvironmentLights';
-import { CyberGrid } from './CyberGrid';
 import { CyberCoreMesh } from './CyberCoreMesh';
 import { CameraControls } from './CameraControls';
+import { CyberGrid } from './CyberGrid';
+import { Canvas } from '@react-three/fiber';
+import { useCoreStore } from '../../store/useCoreStore';
 
-interface SceneCanvasProps {
-  getAudioData: () => { bass: number; mid: number; treble: number; rms: number };
-}
+export const SceneCanvas = () => {
+  const wireframe = useCoreStore((state) => state.wireframe);
 
-export const SceneCanvas = ({ getAudioData }: SceneCanvasProps) => {
   return (
     <div className="canvas-container">
       <Canvas
@@ -20,18 +19,18 @@ export const SceneCanvas = ({ getAudioData }: SceneCanvasProps) => {
           alpha: false,
         }}
       >
-        {/* Background & Atmospheric Fog */}
+        {/* Background Color & Extended Fog */}
         <color attach="background" args={['#030014']} />
-        <fog attach="fog" args={['#030014', 12, 40]} />
+        <fog attach="fog" args={['#030014', 35, 250]} />
+
+        {/* Stationary Background Grid Wall */}
+        <CyberGrid />
 
         {/* Scene Lighting */}
         <EnvironmentLights />
 
-        {/* Floor Horizon Grid */}
-        <CyberGrid />
-
         {/* Central Deforming GLSL CyberCore Mesh */}
-        <CyberCoreMesh getAudioData={getAudioData} />
+        <CyberCoreMesh wireframe={wireframe} />
 
         {/* Camera Navigation */}
         <CameraControls />
